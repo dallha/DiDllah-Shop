@@ -13,6 +13,8 @@ import {
   type SiteContent,
   type SiteImages,
   type ProductUniverse,
+  type Review,
+  type Artisan,
 } from '@/lib/data';
 
 // ─── Styles partagés ──────────────────────────────────────────────────────────
@@ -463,7 +465,7 @@ function ImageUploadField({
 
 // ─── Définition des onglets ───────────────────────────────────────────────────
 
-type TabId = 'medias' | 'accueil' | 'beaute' | 'mode' | 'catalogue' | 'contact';
+type TabId = 'medias' | 'accueil' | 'beaute' | 'mode' | 'catalogue' | 'contact' | 'avis' | 'artisans' | 'marquee';
 
 const TABS: { id: TabId; icon: string; label: string }[] = [
   { id: 'medias',    icon: '🖼️', label: 'Médias' },
@@ -472,6 +474,9 @@ const TABS: { id: TabId; icon: string; label: string }[] = [
   { id: 'mode',      icon: '👗', label: 'Mode' },
   { id: 'catalogue', icon: '📦', label: 'Catalogue' },
   { id: 'contact',   icon: '📞', label: 'Contact' },
+  { id: 'avis',      icon: '⭐', label: 'Avis clients' },
+  { id: 'artisans',  icon: '🧵', label: 'Artisans' },
+  { id: 'marquee',   icon: '📢', label: 'Marquee' },
 ];
 
 // ─── Panneaux de contenu ──────────────────────────────────────────────────────
@@ -1060,6 +1065,271 @@ function TabContact({
   );
 }
 
+// ─── Onglet Avis clients ──────────────────────────────────────────────────────
+
+function TabAvis({
+  c,
+  update,
+}: {
+  c: SiteContent;
+  update: (mutator: (draft: SiteContent) => void) => void;
+}) {
+  return (
+    <div className="space-y-5">
+      <Card title="En-tête de la section">
+        <TextField
+          label="Titre"
+          value={c.reviews.title}
+          onChange={(v) => update((d) => { d.reviews.title = v; })}
+        />
+        <TextField
+          label="Sous-titre"
+          value={c.reviews.subtitle}
+          onChange={(v) => update((d) => { d.reviews.subtitle = v; })}
+          multiline
+        />
+      </Card>
+
+      <Card title="Avis clients" description="Ajoutez, modifiez ou supprimez des avis.">
+        <div className="space-y-3">
+          {c.reviews.items.map((review, i) => (
+            <div key={i} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+              <div className="mb-3 flex items-center justify-between">
+                <span className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-400">Avis {i + 1}</span>
+                <button
+                  type="button"
+                  onClick={() => update((d) => { d.reviews.items.splice(i, 1); })}
+                  className="rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-600 hover:bg-red-100 transition"
+                >
+                  🗑 Supprimer
+                </button>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <TextField
+                  label="Initiales"
+                  value={review.initials}
+                  onChange={(v) => update((d) => { d.reviews.items[i].initials = v; })}
+                  hint="Ex: AK"
+                />
+                <TextField
+                  label="Nom"
+                  value={review.name}
+                  onChange={(v) => update((d) => { d.reviews.items[i].name = v; })}
+                />
+                <TextField
+                  label="Rôle"
+                  value={review.role}
+                  onChange={(v) => update((d) => { d.reviews.items[i].role = v; })}
+                />
+                <TextField
+                  label="Produit"
+                  value={review.product}
+                  onChange={(v) => update((d) => { d.reviews.items[i].product = v; })}
+                />
+                <TextField
+                  label="Note (1-5)"
+                  value={String(review.rating)}
+                  onChange={(v) => update((d) => { d.reviews.items[i].rating = parseInt(v) || 5; })}
+                />
+                <TextField
+                  label="Résultat"
+                  value={review.result || ''}
+                  onChange={(v) => update((d) => { d.reviews.items[i].result = v; })}
+                />
+                <TextField
+                  label="Période"
+                  value={review.period || ''}
+                  onChange={(v) => update((d) => { d.reviews.items[i].period = v; })}
+                />
+              </div>
+              <div className="mt-4">
+                <TextField
+                  label="Texte du témoignage"
+                  value={review.text}
+                  onChange={(v) => update((d) => { d.reviews.items[i].text = v; })}
+                  multiline
+                />
+              </div>
+              <div className="mt-4">
+                <TextField
+                  label="Tags (séparés par des virgules)"
+                  value={review.tags.join(', ')}
+                  onChange={(v) => update((d) => { d.reviews.items[i].tags = v.split(',').map(t => t.trim()).filter(Boolean); })}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+        <button
+          type="button"
+          onClick={() => update((d) => {
+            d.reviews.items.push({
+              initials: 'XX',
+              name: 'Nouveau Client',
+              role: 'Client',
+              product: 'Produit',
+              rating: 5,
+              text: 'Super produit, je recommande !',
+              tags: ['Qualité'],
+              result: 'Satisfait',
+              period: '1 mois',
+            });
+          })}
+          className="w-full rounded-xl border-2 border-dashed border-brand-200 bg-brand-50/40 py-3 text-sm font-semibold text-brand-700 hover:border-brand-400 hover:bg-brand-50 transition"
+        >
+          + Ajouter un avis
+        </button>
+      </Card>
+    </div>
+  );
+}
+
+// ─── Onglet Artisans ──────────────────────────────────────────────────────────
+
+function TabArtisans({
+  c,
+  update,
+}: {
+  c: SiteContent;
+  update: (mutator: (draft: SiteContent) => void) => void;
+}) {
+  return (
+    <div className="space-y-5">
+      <Card title="En-tête de la section">
+        <TextField
+          label="Titre"
+          value={c.artisans.title}
+          onChange={(v) => update((d) => { d.artisans.title = v; })}
+        />
+        <TextField
+          label="Sous-titre"
+          value={c.artisans.subtitle}
+          onChange={(v) => update((d) => { d.artisans.subtitle = v; })}
+          multiline
+        />
+      </Card>
+
+      <Card title="Artisans" description="Ajoutez, modifiez ou supprimez des artisans.">
+        <div className="space-y-3">
+          {c.artisans.items.map((artisan, i) => (
+            <div key={i} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+              <div className="mb-3 flex items-center justify-between">
+                <span className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-400">Artisan {i + 1}</span>
+                <button
+                  type="button"
+                  onClick={() => update((d) => { d.artisans.items.splice(i, 1); })}
+                  className="rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-600 hover:bg-red-100 transition"
+                >
+                  🗑 Supprimer
+                </button>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <TextField
+                  label="Nom"
+                  value={artisan.name}
+                  onChange={(v) => update((d) => { d.artisans.items[i].name = v; })}
+                />
+                <TextField
+                  label="Rôle"
+                  value={artisan.role}
+                  onChange={(v) => update((d) => { d.artisans.items[i].role = v; })}
+                />
+                <TextField
+                  label="Localisation"
+                  value={artisan.location}
+                  onChange={(v) => update((d) => { d.artisans.items[i].location = v; })}
+                />
+                <TextField
+                  label="Image Seed"
+                  value={artisan.imageSeed}
+                  onChange={(v) => update((d) => { d.artisans.items[i].imageSeed = v; })}
+                  hint="Identifiant pour l'image (picsum.photos)"
+                />
+              </div>
+              <div className="mt-4">
+                <TextField
+                  label="Description"
+                  value={artisan.description}
+                  onChange={(v) => update((d) => { d.artisans.items[i].description = v; })}
+                  multiline
+                />
+              </div>
+              <div className="mt-4">
+                <TextField
+                  label="Tags (séparés par des virgules)"
+                  value={artisan.tags.join(', ')}
+                  onChange={(v) => update((d) => { d.artisans.items[i].tags = v.split(',').map(t => t.trim()).filter(Boolean); })}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+        <button
+          type="button"
+          onClick={() => update((d) => {
+            d.artisans.items.push({
+              name: 'Nouvel Artisan',
+              role: 'Artisan',
+              location: 'Dakar',
+              description: 'Description de l\'artisan.',
+              tags: ['Artisanat'],
+              imageSeed: 'artisan-default',
+            });
+          })}
+          className="w-full rounded-xl border-2 border-dashed border-brand-200 bg-brand-50/40 py-3 text-sm font-semibold text-brand-700 hover:border-brand-400 hover:bg-brand-50 transition"
+        >
+          + Ajouter un artisan
+        </button>
+      </Card>
+    </div>
+  );
+}
+
+// ─── Onglet Marquee ───────────────────────────────────────────────────────────
+
+function TabMarquee({
+  c,
+  update,
+}: {
+  c: SiteContent;
+  update: (mutator: (draft: SiteContent) => void) => void;
+}) {
+  return (
+    <div className="space-y-5">
+      <Card title="Barre défilante (Marquee)" description="Messages qui défilent en haut du site. Ajoutez, modifiez ou supprimez des messages.">
+        <div className="space-y-3">
+          {c.marquee.map((item, i) => (
+            <div key={i} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+              <div className="mb-3 flex items-center justify-between">
+                <span className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-400">Message {i + 1}</span>
+                <button
+                  type="button"
+                  onClick={() => update((d) => { d.marquee.splice(i, 1); })}
+                  className="rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-600 hover:bg-red-100 transition"
+                >
+                  🗑 Supprimer
+                </button>
+              </div>
+              <TextField
+                label="Texte"
+                value={item}
+                onChange={(v) => update((d) => { d.marquee[i] = v; })}
+              />
+            </div>
+          ))}
+        </div>
+        <button
+          type="button"
+          onClick={() => update((d) => { d.marquee.push('Nouveau message'); })}
+          className="w-full rounded-xl border-2 border-dashed border-brand-200 bg-brand-50/40 py-3 text-sm font-semibold text-brand-700 hover:border-brand-400 hover:bg-brand-50 transition"
+        >
+          + Ajouter un message
+        </button>
+      </Card>
+    </div>
+  );
+}
+
 // ─── Page principale ──────────────────────────────────────────────────────────
 
 export default function AdminContentPage() {
@@ -1257,6 +1527,15 @@ export default function AdminContentPage() {
                   )}
                   {activeTab === 'contact' && (
                     <TabContact c={c} update={update} />
+                  )}
+                  {activeTab === 'avis' && (
+                    <TabAvis c={c} update={update} />
+                  )}
+                  {activeTab === 'artisans' && (
+                    <TabArtisans c={c} update={update} />
+                  )}
+                  {activeTab === 'marquee' && (
+                    <TabMarquee c={c} update={update} />
                   )}
                 </div>
               </div>

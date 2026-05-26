@@ -426,12 +426,46 @@ export type ContactContent = {
   back: string;
 };
 
+export type Review = {
+  initials: string;
+  name: string;
+  role: string;
+  product: string;
+  rating: number;
+  text: string;
+  tags: string[];
+  result?: string;
+  period?: string;
+};
+
+export type Artisan = {
+  name: string;
+  role: string;
+  location: string;
+  description: string;
+  tags: string[];
+  imageSeed: string;
+};
+
+export type MarqueeItem = string;
+
 export type SiteContent = {
   home: HomeContent;
   beaute: UniversePageContent;
   mode: UniversePageContent;
   catalogue: CatalogueContent;
   contact: ContactContent;
+  reviews: {
+    title: string;
+    subtitle: string;
+    items: Review[];
+  };
+  artisans: {
+    title: string;
+    subtitle: string;
+    items: Artisan[];
+  };
+  marquee: MarqueeItem[];
 };
 
 export const defaultSiteContent: SiteContent = {
@@ -600,6 +634,82 @@ export const defaultSiteContent: SiteContent = {
     },
     back: 'Retour à l’accueil',
   },
+  reviews: {
+    title: 'Ce que disent nos clients',
+    subtitle: 'Des avis authentiques de clients satisfaits à travers le monde.',
+    items: [
+      {
+        initials: 'AK',
+        name: 'Aïssatou K.',
+        role: 'Cliente beauté',
+        product: 'Lait Corporel au Karité',
+        rating: 5,
+        text: 'Ce lait corporel est une merveille ! Ma peau est hydratée toute la journée, et le parfum est subtil et agréable. Je recommande vivement.',
+        tags: ['Hydratation', 'Karité'],
+        result: 'Peau nourrie',
+        period: '1 mois',
+      },
+      {
+        initials: 'MB',
+        name: 'Moussa B.',
+        role: 'Client mode',
+        product: 'Chemise en Lin',
+        rating: 5,
+        text: 'La qualité est exceptionnelle. Le lin est doux, la coupe parfaite. Je l\'ai portée pour un mariage et j\'ai reçu des compliments.',
+        tags: ['Qualité', 'Coupe'],
+        result: 'Look élégant',
+        period: '2 semaines',
+      },
+      {
+        initials: 'FD',
+        name: 'Fatou D.',
+        role: 'Cliente beauté',
+        product: 'Huile de Ricin Noir',
+        rating: 5,
+        text: 'Mes cheveux ont retrouvé leur force et leur brillance en seulement 3 semaines. Le produit est 100 % naturel, ça se voit !',
+        tags: ['Cheveux', 'Naturel'],
+        result: 'Cheveux fortifiés',
+        period: '3 semaines',
+      },
+    ],
+  },
+  artisans: {
+    title: 'Nos artisans',
+    subtitle: 'Des mains d\'exception qui perpétuent les savoir-faire traditionnels sénégalais.',
+    items: [
+      {
+        name: 'Mame Diarra',
+        role: 'Teinturière Bazin',
+        location: 'Dakar',
+        description: 'Mame perpétue l\'art de la teinture du bazin riche, une tradition familiale transmise depuis trois générations dans son atelier de Dakar.',
+        tags: ['Bazin', 'Teinture', 'Artisanat'],
+        imageSeed: 'artisan-bazin',
+      },
+      {
+        name: 'Aminata Sow',
+        role: 'Couturière Traditionnelle',
+        location: 'Thiès',
+        description: 'Aminata confectionne des tenues traditionnelles et contemporaines avec une précision remarquable, mêlant motifs anciens et coupes modernes.',
+        tags: ['Couture', 'Tradition', 'Mode'],
+        imageSeed: 'artisan-couture',
+      },
+      {
+        name: 'Khady Ndiaye',
+        role: 'Productrice de Karité',
+        location: 'Casamance',
+        description: 'Khady dirige une coopérative de femmes qui produisent du beurre de karité brut selon les méthodes ancestrales de la Casamance.',
+        tags: ['Karité', 'Coopérative', 'Naturel'],
+        imageSeed: 'artisan-karite',
+      },
+    ],
+  },
+  marquee: [
+    'Livraison offerte dès 50 000 FCFA',
+    'Paiement sécurisé Orange Money · Wave · Carte bancaire',
+    'Retour sous 14 jours',
+    'Artisanat sénégalais — Made in Dakar',
+    '🌍 Livraison internationale disponible',
+  ],
 };
 
 // =========================================================================
