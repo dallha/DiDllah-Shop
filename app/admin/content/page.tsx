@@ -1454,7 +1454,13 @@ type PendingReview = {
   created_at: string;
 };
 
-function TabPendingReviews() {
+function TabPendingReviews({
+  update,
+  onSave,
+}: {
+  update: (mutator: (draft: SiteContent) => void) => void;
+  onSave: () => Promise<void>;
+}) {
   const [reviews, setReviews] = useState<PendingReview[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -1497,8 +1503,39 @@ function TabPendingReviews() {
         .update({ status: 'approved' })
         .eq('id', id);
       if (updateError) throw new Error(updateError.message);
+
+      // Ajouter l'avis au contenu éditorial du site
+      const reviewObj = reviews.find((r) => r.id === id);
+      if (reviewObj) {
+        const names = reviewObj.name.trim().split(/\s+/);
+        let initials = 'CL';
+        if (names.length > 0) {
+          initials = names.map((n) => n[0]).join('').toUpperCase().slice(0, 2);
+        }
+
+        update((draft) => {
+          draft.reviews.items.push({
+            initials,
+            name: reviewObj.name,
+            role: 'Client vérifié',
+            product: reviewObj.product,
+            rating: reviewObj.rating,
+            text: reviewObj.text,
+            tags: ['Vérifié'],
+            result: 'Satisfait',
+            period: 'Récemment',
+          });
+        });
+
+        // Déclencher la sauvegarde persistante vers site_settings
+        setTimeout(() => {
+          void onSave();
+        }, 100);
+      }
+
       setReviews((prev) => prev.filter((r) => r.id !== id));
-    } catch {
+    } catch (err) {
+      console.error('[TabPendingReviews] Erreur approbation:', err);
       setError('Erreur lors de l\'approbation.');
     } finally {
       setActionLoading(null);
@@ -1672,11 +1709,16 @@ export default function AdminContentPage() {
     setSaving(true);
     setSaveStatus('idle');
 
+    // Lire les valeurs les plus récentes du store Zustand pour éviter l'état obsolète (stale state)
+    const freshSiteContent = useShopStore.getState().siteContent;
+    const freshSiteImages = useShopStore.getState().siteImages;
+    const freshBrand = useShopStore.getState().brand;
+
     // 1) Sauvegarder vers Supabase (si configuré)
-    const supabaseResult = await saveAllToSupabase(siteContent, siteImages, brand);
+    const supabaseResult = await saveAllToSupabase(freshSiteContent, freshSiteImages, freshBrand);
 
     // 2) Sauvegarder aussi localement (fallback fichier JSON)
-    const localResult = await saveAllToLocal(siteContent, siteImages, brand);
+    const localResult = await saveAllToLocal(freshSiteContent, freshSiteImages, freshBrand);
 
     setSaving(false);
     if (supabaseResult.ok && localResult.ok) {
@@ -1691,7 +1733,10 @@ export default function AdminContentPage() {
   async function handleSaveLocal() {
     setSaving(true);
     setSaveStatus('idle');
-    const result = await saveAllToLocal(siteContent, siteImages, brand);
+    const freshSiteContent = useShopStore.getState().siteContent;
+    const freshSiteImages = useShopStore.getState().siteImages;
+    const freshBrand = useShopStore.getState().brand;
+    const result = await saveAllToLocal(freshSiteContent, freshSiteImages, freshBrand);
     setSaving(false);
     if (result.ok) {
       setSaveStatus('success');
@@ -1868,7 +1913,10 @@ export default function AdminContentPage() {
                     <TabFooterLinks c={c} update={update} />
                   )}
                   {activeTab === 'pending-reviews' && (
-                    <TabPendingReviews />
+                    <TabPendingReviews
+                      update={update}
+                      onSave={handleSave}
+                    />
                   )}
                 </div>
               </div>

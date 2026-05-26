@@ -164,6 +164,7 @@ function ReviewForm({ onSubmitted }: { onSubmitted: () => void }) {
       setSuccess(true);
       onSubmitted();
     } catch (err) {
+      console.error('[ReviewsSection] Erreur de soumission de l\'avis:', err);
       setError("Une erreur est survenue. Veuillez réessayer plus tard.");
     } finally {
       setSending(false);

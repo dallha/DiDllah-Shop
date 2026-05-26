@@ -94,6 +94,19 @@ CREATE TABLE IF NOT EXISTS products (
   updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+-- 7. Table des Avis en attente (témoignages soumis par les visiteurs)
+-- ─────────────────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS pending_reviews (
+  id         UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  name       TEXT NOT NULL,
+  email      TEXT,
+  rating     INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
+  product    TEXT NOT NULL,
+  text       TEXT NOT NULL,
+  status     TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
 -- =============================================================================
 -- 🔒 Activation du Row Level Security (RLS) sur toutes les tables
 -- =============================================================================
@@ -104,6 +117,7 @@ ALTER TABLE paiements ENABLE ROW LEVEL SECURITY;
 ALTER TABLE fournisseurs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE products ENABLE ROW LEVEL SECURITY;
+ALTER TABLE pending_reviews ENABLE ROW LEVEL SECURITY;
 
 -- 🛡️ Politiques d'accès Sécurisées
 -- Seuls les utilisateurs authentifiés (administrateur connecté) ont un accès total.
@@ -144,6 +158,17 @@ DROP POLICY IF EXISTS "Modification Admin Commandes" ON orders;
 CREATE POLICY "Lecture Admin Commandes" ON orders FOR SELECT USING (auth.role() = 'authenticated');
 CREATE POLICY "Insertion Publique Commandes" ON orders FOR INSERT WITH CHECK (true);
 CREATE POLICY "Modification Admin Commandes" ON orders FOR ALL USING (auth.role() = 'authenticated') WITH CHECK (auth.role() = 'authenticated');
+
+-- G. Table 'pending_reviews' (Insertion libre publique, gestion totale admin)
+DROP POLICY IF EXISTS "Insertion publique pending_reviews" ON pending_reviews;
+DROP POLICY IF EXISTS "Lecture admin pending_reviews" ON pending_reviews;
+DROP POLICY IF EXISTS "Modification admin pending_reviews" ON pending_reviews;
+DROP POLICY IF EXISTS "Suppression admin pending_reviews" ON pending_reviews;
+
+CREATE POLICY "Insertion publique pending_reviews" ON pending_reviews FOR INSERT WITH CHECK (true);
+CREATE POLICY "Lecture admin pending_reviews" ON pending_reviews FOR SELECT USING (auth.role() = 'authenticated');
+CREATE POLICY "Modification admin pending_reviews" ON pending_reviews FOR UPDATE USING (auth.role() = 'authenticated') WITH CHECK (auth.role() = 'authenticated');
+CREATE POLICY "Suppression admin pending_reviews" ON pending_reviews FOR DELETE USING (auth.role() = 'authenticated');
 
 -- =============================================================================
 -- 📦 Configuration du Bucket de Stockage pour les images du site
