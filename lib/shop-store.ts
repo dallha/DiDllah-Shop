@@ -20,6 +20,8 @@ export type ShopSettings = {
   hours: string;
   tiktok?: string;
   facebook?: string;
+  /** Liens de navigation personnalisables (header) */
+  navLinks?: { label: string; href: string }[];
 };
 
 // Ré-exporte le type pour les composants qui l'importent depuis shop-store

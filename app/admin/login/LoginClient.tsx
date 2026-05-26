@@ -32,20 +32,37 @@ export default function LoginClient() {
     setError(null);
     setLoading(true);
 
+    // 1) Essayer Supabase d'abord
     const supabase = createClient();
     const { error: authError } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
-    if (authError) {
-      setError('Email ou mot de passe incorrect.');
-      setLoading(false);
+    if (!authError) {
+      router.push(redirectTo);
+      router.refresh();
       return;
     }
 
-    router.push(redirectTo);
-    router.refresh();
+    // 2) Fallback : ADMIN_SECRET (connexion locale sans Supabase)
+    try {
+      const res = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password }),
+      });
+      if (res.ok) {
+        router.push(redirectTo);
+        router.refresh();
+        return;
+      }
+    } catch {
+      // Ignorer si l'API n'existe pas
+    }
+
+    setError('Email ou mot de passe incorrect.');
+    setLoading(false);
   }
 
   return (

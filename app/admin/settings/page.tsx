@@ -464,6 +464,72 @@ export default function SettingsPage() {
             </label>
           </div>
 
+          {/* ── Liens de navigation ── */}
+          <div className="mt-8 border-t border-slate-200 pt-6">
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500 mb-4">
+              Liens de navigation (header)
+            </p>
+            <p className="text-xs text-slate-400 mb-4">
+              Personnalisez les liens affichés dans la barre de navigation. Ajoutez, modifiez ou supprimez des liens.
+            </p>
+            <div className="space-y-3">
+              {(mounted && brand.navLinks ? brand.navLinks : []).map((link, i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <input
+                    type="text"
+                    value={link.label}
+                    onChange={(e) => {
+                      const updated = [...(brand.navLinks || [])];
+                      updated[i] = { ...updated[i], label: e.target.value };
+                      setBrand({ navLinks: updated });
+                      setDirty(true);
+                      setSaveStatus('idle');
+                    }}
+                    className="flex-1 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 shadow-sm transition focus:border-brand-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+                    placeholder="Texte affiché"
+                  />
+                  <input
+                    type="text"
+                    value={link.href}
+                    onChange={(e) => {
+                      const updated = [...(brand.navLinks || [])];
+                      updated[i] = { ...updated[i], href: e.target.value };
+                      setBrand({ navLinks: updated });
+                      setDirty(true);
+                      setSaveStatus('idle');
+                    }}
+                    className="flex-1 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 shadow-sm transition focus:border-brand-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+                    placeholder="/lien"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const updated = (brand.navLinks || []).filter((_, idx) => idx !== i);
+                      setBrand({ navLinks: updated });
+                      setDirty(true);
+                      setSaveStatus('idle');
+                    }}
+                    className="rounded-full bg-red-50 px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-100 transition"
+                  >
+                    🗑
+                  </button>
+                </div>
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                const updated = [...(brand.navLinks || []), { label: 'Nouveau lien', href: '/' }];
+                setBrand({ navLinks: updated });
+                setDirty(true);
+                setSaveStatus('idle');
+              }}
+              className="mt-3 w-full rounded-xl border-2 border-dashed border-brand-200 bg-brand-50/40 py-2.5 text-sm font-semibold text-brand-700 hover:border-brand-400 hover:bg-brand-50 transition"
+            >
+              + Ajouter un lien de navigation
+            </button>
+          </div>
+
           <div className="mt-8 flex flex-col gap-3 border-t border-slate-200 pt-6 sm:flex-row sm:items-center sm:justify-between">
             <div className="text-sm">
               {saveStatus === 'success' && <p className="text-emerald-700">✓ Paramètres enregistrés avec succès.</p>}

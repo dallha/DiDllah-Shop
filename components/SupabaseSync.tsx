@@ -29,62 +29,100 @@ export default function SupabaseSync() {
   const setBrand           = useShopStore((state) => state.setBrand);
   const setProducts        = useShopStore((state) => state.setProducts);
 
-  // ── Lecture initiale depuis Supabase dès le montage ───────────────────────
-  // On n'attend plus hydrated : Supabase est la source de vérité.
-  // Les données arrivent en 2 temps : d'abord localStorage (instantané),
-  // puis Supabase écrase avec les valeurs les plus récentes.
+  // ── Lecture initiale depuis Supabase ou fichier local ────────────────────
   useEffect(() => {
-    if (!isSupabaseConfigured || initialSyncDone.current) return;
+    if (initialSyncDone.current) return;
     initialSyncDone.current = true;
 
-    async function pullFromSupabase() {
-      try {
-        const supabaseClient = createClient();
-        const [remoteContent, remoteImages, remoteBrand, remoteProductsResult] = await Promise.all([
-          getSettingValue<SiteContent>('site_content'),
-          getSettingValue<SiteImages>('site_images'),
-          getSettingValue<ShopSettings>('brand'),
-          supabaseClient.from('products').select('*'),
-        ]);
+    async function pullInitialData() {
+      // 1) Si Supabase est configuré, charger depuis Supabase
+      if (isSupabaseConfigured) {
+        try {
+          const supabaseClient = createClient();
+          const [remoteContent, remoteImages, remoteBrand, remoteProductsResult] = await Promise.all([
+            getSettingValue<SiteContent>('site_content'),
+            getSettingValue<SiteImages>('site_images'),
+            getSettingValue<ShopSettings>('brand'),
+            supabaseClient.from('products').select('*'),
+          ]);
 
-        if (remoteContent)  setSiteContentDeep(() => deepMerge(defaultSiteContent, remoteContent));
-        if (remoteImages)   setSiteImages(remoteImages);
-        if (remoteBrand)    setBrand(remoteBrand);
-        
-        const remoteProductsData = remoteProductsResult.data;
-        if (remoteProductsData && Array.isArray(remoteProductsData) && remoteProductsData.length > 0) {
-          const remoteProducts = remoteProductsData.map((row) => ({
-            id: row.id,
-            name: row.name,
-            univers: row.univers,
-            category: row.category,
-            price: Number(row.price) || 0,
-            tag: row.tag || undefined,
-            short: row.short || '',
-            long: row.long || '',
-            details: Array.isArray(row.details) ? row.details : [],
-            imageUrl: row.image_url || undefined,
-            active: row.active !== false,
-          })) as Product[];
-          setProducts(remoteProducts);
-        } else {
-          // Migration transparente : Si la table SQL 'products' est vide, 
-          // charger les produits depuis l'ancien format JSON dans 'site_settings'
-          const fallbackProducts = await getSettingValue<Product[]>('products');
-          if (fallbackProducts && Array.isArray(fallbackProducts)) {
-            console.log('[SupabaseSync] Migration : Chargement des produits depuis le fallback JSON site_settings');
-            setProducts(fallbackProducts);
+          if (remoteContent)  setSiteContentDeep(() => deepMerge(defaultSiteContent, remoteContent));
+          if (remoteImages)   setSiteImages(remoteImages);
+          if (remoteBrand)    setBrand(remoteBrand);
+          
+          const remoteProductsData = remoteProductsResult.data;
+          if (remoteProductsData && Array.isArray(remoteProductsData) && remoteProductsData.length > 0) {
+            const remoteProducts = remoteProductsData.map((row) => ({
+              id: row.id,
+              name: row.name,
+              univers: row.univers,
+              category: row.category,
+              price: Number(row.price) || 0,
+              tag: row.tag || undefined,
+              short: row.short || '',
+              long: row.long || '',
+              details: Array.isArray(row.details) ? row.details : [],
+              imageUrl: row.image_url || undefined,
+              active: row.active !== false,
+            })) as Product[];
+            setProducts(remoteProducts);
+          } else {
+            const fallbackProducts = await getSettingValue<Product[]>('products');
+            if (fallbackProducts && Array.isArray(fallbackProducts)) {
+              console.log('[SupabaseSync] Migration : Chargement des produits depuis le fallback JSON site_settings');
+              setProducts(fallbackProducts);
+            }
           }
+          return; // Succès → on ne charge pas le fichier local
+        } catch (err) {
+          console.warn('[SupabaseSync] Sync Supabase échoué, fallback fichier local :', err);
+        }
+      }
+
+      // 2) Fallback : charger depuis le fichier JSON local
+      try {
+        const res = await fetch('/api/admin/data');
+        if (res.ok) {
+          const localData = await res.json();
+          if (localData.siteContent) setSiteContentDeep(() => deepMerge(defaultSiteContent, localData.siteContent));
+          if (localData.siteImages)  setSiteImages(localData.siteImages);
+          if (localData.brand)       setBrand(localData.brand);
+          if (localData.products)    setProducts(localData.products);
+          console.log('[SupabaseSync] Données chargées depuis le fichier local');
         }
       } catch (err) {
-        console.warn('[SupabaseSync] Sync initial échoué :', err);
+        console.warn('[SupabaseSync] Aucune donnée locale trouvée :', err);
       }
     }
 
-    void pullFromSupabase();
+    void pullInitialData();
   }, [setSiteContentDeep, setSiteImages, setBrand, setProducts]);
 
+
   return null;
+}
+
+// ── Sauvegarde explicite vers fichier local (fallback sans Supabase) ──────────
+export async function saveAllToLocal(
+  siteContent: SiteContent,
+  siteImages: SiteImages,
+  brand: ShopSettings,
+  products?: Product[],
+): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const res = await fetch('/api/admin/data', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ siteContent, siteImages, brand, products }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ error: 'Erreur inconnue' }));
+      return { ok: false, error: err.error || 'Erreur lors de la sauvegarde locale' };
+    }
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: String(err) };
+  }
 }
 
 // ── Sauvegarde explicite vers Supabase ────────────────────────────────────────

@@ -8,7 +8,7 @@ import { useCartStore } from '@/lib/cart-store';
 import { useShopStore, whatsappToHref } from '@/lib/shop-store';
 import { useHydrated } from '@/lib/use-hydrated';
 
-const NAV_LINKS = [
+const DEFAULT_NAV_LINKS = [
   { href: '/catalogue', label: 'Boutique' },
   { href: '/beaute', label: 'Beauté' },
   { href: '/mode', label: 'Mode' },
@@ -25,6 +25,11 @@ export default function Header() {
   const pathname = usePathname();
 
   const logoDataUrl = hydrated ? siteImages.logoDataUrl : null;
+
+  // Liens de navigation dynamiques : brand.navLinks si défini, sinon défaut
+  const NAV_LINKS = hydrated && brand.navLinks && brand.navLinks.length > 0
+    ? brand.navLinks
+    : DEFAULT_NAV_LINKS;
 
   // Ferme le menu mobile à chaque changement de route
   useEffect(() => {

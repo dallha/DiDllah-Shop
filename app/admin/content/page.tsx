@@ -6,7 +6,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import AdminSidebar from '@/components/AdminSidebar';
 import { useShopStore } from '@/lib/shop-store';
 import { useHydrated } from '@/lib/use-hydrated';
-import { saveAllToSupabase } from '@/components/SupabaseSync';
+import { saveAllToSupabase, saveAllToLocal } from '@/components/SupabaseSync';
 import { createClient } from '@/lib/supabase-client';
 import { isSupabaseConfigured } from '@/lib/supabase';
 import {
@@ -467,7 +467,7 @@ function ImageUploadField({
 
 // ─── Définition des onglets ───────────────────────────────────────────────────
 
-type TabId = 'medias' | 'accueil' | 'beaute' | 'mode' | 'catalogue' | 'contact' | 'avis' | 'artisans' | 'marquee' | 'pending-reviews';
+type TabId = 'medias' | 'accueil' | 'beaute' | 'mode' | 'catalogue' | 'contact' | 'avis' | 'artisans' | 'marquee' | 'pending-reviews' | 'trustbar' | 'footerlinks';
 
 const TABS: { id: TabId; icon: string; label: string }[] = [
   { id: 'medias',    icon: '🖼️', label: 'Médias' },
@@ -479,6 +479,8 @@ const TABS: { id: TabId; icon: string; label: string }[] = [
   { id: 'avis',      icon: '⭐', label: 'Avis clients' },
   { id: 'artisans',  icon: '🧵', label: 'Artisans' },
   { id: 'marquee',   icon: '📢', label: 'Marquee' },
+  { id: 'trustbar',  icon: '🔒', label: 'Barre de confiance' },
+  { id: 'footerlinks', icon: '🔗', label: 'Liens footer' },
   { id: 'pending-reviews', icon: '⏳', label: 'Avis en attente' },
 ];
 
@@ -1333,6 +1335,112 @@ function TabMarquee({
   );
 }
 
+// ─── Onglet Barre de confiance ───────────────────────────────────────────────
+
+function TabTrustBar({
+  c,
+  update,
+}: {
+  c: SiteContent;
+  update: (mutator: (draft: SiteContent) => void) => void;
+}) {
+  return (
+    <div className="space-y-5">
+      <Card title="Barre de confiance" description="Icônes et textes affichés sous le header. Ajoutez, modifiez ou supprimez des éléments.">
+        <div className="space-y-3">
+          {c.trustBar.map((item, i) => (
+            <div key={i} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+              <div className="mb-3 flex items-center justify-between">
+                <span className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-400">Élément {i + 1}</span>
+                <button
+                  type="button"
+                  onClick={() => update((d) => { d.trustBar.splice(i, 1); })}
+                  className="rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-600 hover:bg-red-100 transition"
+                >
+                  🗑 Supprimer
+                </button>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <TextField
+                  label="Icône (emoji)"
+                  value={item.icon}
+                  onChange={(v) => update((d) => { d.trustBar[i].icon = v; })}
+                  hint="Ex: 🔒, 🚚, 💳, ✅"
+                />
+                <TextField
+                  label="Texte"
+                  value={item.label}
+                  onChange={(v) => update((d) => { d.trustBar[i].label = v; })}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+        <button
+          type="button"
+          onClick={() => update((d) => { d.trustBar.push({ icon: '✨', label: 'Nouvel élément' }); })}
+          className="w-full rounded-xl border-2 border-dashed border-brand-200 bg-brand-50/40 py-3 text-sm font-semibold text-brand-700 hover:border-brand-400 hover:bg-brand-50 transition"
+        >
+          + Ajouter un élément
+        </button>
+      </Card>
+    </div>
+  );
+}
+
+// ─── Onglet Liens footer ─────────────────────────────────────────────────────
+
+function TabFooterLinks({
+  c,
+  update,
+}: {
+  c: SiteContent;
+  update: (mutator: (draft: SiteContent) => void) => void;
+}) {
+  return (
+    <div className="space-y-5">
+      <Card title="Liens du footer" description="Liens affichés dans le pied de page. Ajoutez, modifiez ou supprimez des liens.">
+        <div className="space-y-3">
+          {c.footerLinks.map((link, i) => (
+            <div key={i} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+              <div className="mb-3 flex items-center justify-between">
+                <span className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-400">Lien {i + 1}</span>
+                <button
+                  type="button"
+                  onClick={() => update((d) => { d.footerLinks.splice(i, 1); })}
+                  className="rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-600 hover:bg-red-100 transition"
+                >
+                  🗑 Supprimer
+                </button>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <TextField
+                  label="Texte affiché"
+                  value={link.label}
+                  onChange={(v) => update((d) => { d.footerLinks[i].label = v; })}
+                />
+                <TextField
+                  label="Lien (URL)"
+                  value={link.href}
+                  onChange={(v) => update((d) => { d.footerLinks[i].href = v; })}
+                  hint="Ex: /catalogue, /contact, /admin"
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+        <button
+          type="button"
+          onClick={() => update((d) => { d.footerLinks.push({ label: 'Nouveau lien', href: '/' }); })}
+          className="w-full rounded-xl border-2 border-dashed border-brand-200 bg-brand-50/40 py-3 text-sm font-semibold text-brand-700 hover:border-brand-400 hover:bg-brand-50 transition"
+        >
+          + Ajouter un lien
+        </button>
+      </Card>
+    </div>
+  );
+}
+
 // ─── Onglet Avis en attente ──────────────────────────────────────────────────
 
 type PendingReview = {
@@ -1563,7 +1671,27 @@ export default function AdminContentPage() {
   async function handleSave() {
     setSaving(true);
     setSaveStatus('idle');
-    const result = await saveAllToSupabase(siteContent, siteImages, brand);
+
+    // 1) Sauvegarder vers Supabase (si configuré)
+    const supabaseResult = await saveAllToSupabase(siteContent, siteImages, brand);
+
+    // 2) Sauvegarder aussi localement (fallback fichier JSON)
+    const localResult = await saveAllToLocal(siteContent, siteImages, brand);
+
+    setSaving(false);
+    if (supabaseResult.ok && localResult.ok) {
+      setSaveStatus('success');
+      setDirty(false);
+      setTimeout(() => setSaveStatus('idle'), 3000);
+    } else {
+      setSaveStatus('error');
+    }
+  }
+
+  async function handleSaveLocal() {
+    setSaving(true);
+    setSaveStatus('idle');
+    const result = await saveAllToLocal(siteContent, siteImages, brand);
     setSaving(false);
     if (result.ok) {
       setSaveStatus('success');
@@ -1647,6 +1775,14 @@ export default function AdminContentPage() {
                   </button>
                   <button
                     type="button"
+                    onClick={handleSaveLocal}
+                    disabled={saving}
+                    className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition disabled:opacity-60"
+                  >
+                    💾 Sauvegarder localement
+                  </button>
+                  <button
+                    type="button"
                     onClick={() => {
                       if (window.confirm('Restaurer les textes par défaut ? Vos modifications seront perdues.')) {
                         resetSiteContent();
@@ -1724,6 +1860,12 @@ export default function AdminContentPage() {
                   )}
                   {activeTab === 'marquee' && (
                     <TabMarquee c={c} update={update} />
+                  )}
+                  {activeTab === 'trustbar' && (
+                    <TabTrustBar c={c} update={update} />
+                  )}
+                  {activeTab === 'footerlinks' && (
+                    <TabFooterLinks c={c} update={update} />
                   )}
                   {activeTab === 'pending-reviews' && (
                     <TabPendingReviews />

@@ -2,9 +2,11 @@ import type { Metadata, Viewport } from 'next';
 import Link from 'next/link';
 import './globals.css';
 import Header from '@/components/Header';
+import TrustBar from '@/components/TrustBar';
 import CartDrawer from '@/components/CartDrawer';
 import StoreHydrator from '@/components/StoreHydrator';
 import SupabaseSync from '@/components/SupabaseSync';
+import FooterClient from '@/components/FooterClient';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://didallah.sn'),
@@ -64,18 +66,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <div className="relative min-h-screen flex flex-col justify-between">
           <div className="flex-1">
             <Header />
+            <TrustBar />
             <div id="main-content">{children}</div>
           </div>
-          <footer className="w-full bg-slate-100/50 border-t border-slate-200/60 py-6 text-center text-xs text-slate-500">
-            <div className="mx-auto max-w-7xl px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-              <p>© {new Date().getFullYear()} DiDallah Shop. Tous droits réservés.</p>
-              <div className="flex items-center gap-6">
-                <Link href="/catalogue" className="hover:text-slate-900 transition font-medium">Boutique</Link>
-                <Link href="/contact" className="hover:text-slate-900 transition font-medium">Contact</Link>
-                <Link href="/admin" className="hover:text-slate-900 transition font-medium opacity-25 hover:opacity-100">Administration</Link>
-              </div>
-            </div>
-          </footer>
+          <FooterClient />
           <CartDrawer />
         </div>
       </body>

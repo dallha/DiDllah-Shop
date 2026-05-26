@@ -449,6 +449,16 @@ export type Artisan = {
 
 export type MarqueeItem = string;
 
+export type TrustBarItem = {
+  icon: string;
+  label: string;
+};
+
+export type FooterLink = {
+  label: string;
+  href: string;
+};
+
 export type SiteContent = {
   home: HomeContent;
   beaute: UniversePageContent;
@@ -466,6 +476,8 @@ export type SiteContent = {
     items: Artisan[];
   };
   marquee: MarqueeItem[];
+  trustBar: TrustBarItem[];
+  footerLinks: FooterLink[];
 };
 
 export const defaultSiteContent: SiteContent = {
@@ -709,6 +721,17 @@ export const defaultSiteContent: SiteContent = {
     'Retour sous 14 jours',
     'Artisanat sénégalais — Made in Dakar',
     '🌍 Livraison internationale disponible',
+  ],
+  trustBar: [
+    { icon: '🔒', label: 'Achats sécurisés' },
+    { icon: '🚚', label: 'Livraison 24-48h Dakar' },
+    { icon: '💳', label: 'Paiement Orange Money · Wave · Carte' },
+    { icon: '✅', label: 'Produits authentiques' },
+  ],
+  footerLinks: [
+    { label: 'Boutique', href: '/catalogue' },
+    { label: 'Contact', href: '/contact' },
+    { label: 'Administration', href: '/admin' },
   ],
 };
 

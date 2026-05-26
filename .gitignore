@@ -33,3 +33,6 @@ tsconfig.tsbuildinfo
 
 # Vercel
 .vercel
+
+# Données admin locales (sauvegarde JSON)
+data/
