@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" preserveAspectRatio="xMidYMid slice">
+    <rect width="800" height="1000" fill="#e8dac7"></rect>
+    
+    <g transform="translate(400 500)">
+      <circle r="280" fill="#8a6b3a" opacity="0.15"></circle>
+      <ellipse cx="0" cy="-30" rx="180" ry="220" fill="#2c1f15"></ellipse>
+      
+      <path d="M -160 -100 Q -180 -240 -90 -300 Q 0 -340 90 -300 Q 180 -240 160 -100 Q 100 -60 0 -70 Q -100 -60 -160 -100 Z" fill="#8a6b3a"></path>
+      <path d="M -90 -240 Q 0 -290 90 -240" stroke="#c9a96e" stroke-width="2" fill="none"></path>
+      
+      <ellipse cx="0" cy="-130" rx="78" ry="98" fill="#5a3a28"></ellipse>
+      <ellipse cx="-24" cy="-140" rx="5" ry="2.5" fill="#1a1410"></ellipse>
+      <ellipse cx="24" cy="-140" rx="5" ry="2.5" fill="#1a1410"></ellipse>
+      <path d="M -10 -90 Q 0 -82 10 -90" fill="#7a2e3c"></path>
+      
+      <rect x="-22" y="-30" width="44" height="40" fill="#5a3a28"></rect>
+      
+      <path d="M -190 10 Q -220 60 -220 200 L 220 200 Q 220 60 190 10 Q 90 -10 0 0 Q -90 -10 -190 10 Z" fill="#1a1410"></path>
+    </g>
+  
+    
+    
+    <text x="744" y="952" text-anchor="end" font-family="system-ui,sans-serif" font-size="11" fill="#1a1410" opacity="0.45" letter-spacing="3">DIDALLAH · DAKAR</text>
+  </svg>

@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" preserveAspectRatio="xMidYMid slice">
+    <rect width="800" height="1000" fill="#e8dac7"></rect>
+    
+    <g transform="translate(400 500)">
+      <circle r="280" fill="#1a1410"></circle>
+      <circle r="220" fill="none" stroke="#c9a96e" stroke-width="2"></circle>
+      <circle r="180" fill="none" stroke="#c9a96e" stroke-width="1" opacity="0.7"></circle>
+      <circle r="140" fill="none" stroke="#c9a96e" stroke-width="1" opacity="0.5"></circle>
+      <circle cx="200" cy="0" r="6" fill="#c9a96e"></circle><circle cx="173.20508075688775" cy="99.99999999999999" r="6" fill="#c9a96e"></circle><circle cx="100.00000000000003" cy="173.20508075688772" r="6" fill="#c9a96e"></circle><circle cx="1.2246467991473532e-14" cy="200" r="6" fill="#c9a96e"></circle><circle cx="-99.99999999999997" cy="173.20508075688775" r="6" fill="#c9a96e"></circle><circle cx="-173.20508075688775" cy="99.99999999999999" r="6" fill="#c9a96e"></circle><circle cx="-200" cy="2.4492935982947064e-14" r="6" fill="#c9a96e"></circle><circle cx="-173.20508075688772" cy="-100.00000000000003" r="6" fill="#c9a96e"></circle><circle cx="-100.00000000000009" cy="-173.20508075688767" r="6" fill="#c9a96e"></circle><circle cx="-3.6739403974420595e-14" cy="-200" r="6" fill="#c9a96e"></circle><circle cx="100.00000000000003" cy="-173.20508075688772" r="6" fill="#c9a96e"></circle><circle cx="173.20508075688767" cy="-100.00000000000009" r="6" fill="#c9a96e"></circle>
+      <circle cx="120.10433922646727" cy="49.748846207461675" r="4" fill="#e0c690"></circle><circle cx="49.74884620746168" cy="120.10433922646727" r="4" fill="#e0c690"></circle><circle cx="-49.74884620746167" cy="120.10433922646727" r="4" fill="#e0c690"></circle><circle cx="-120.10433922646727" cy="49.74884620746169" r="4" fill="#e0c690"></circle><circle cx="-120.10433922646729" cy="-49.74884620746166" r="4" fill="#e0c690"></circle><circle cx="-49.748846207461746" cy="-120.10433922646725" r="4" fill="#e0c690"></circle><circle cx="49.7488462074617" cy="-120.10433922646726" r="4" fill="#e0c690"></circle><circle cx="120.10433922646725" cy="-49.74884620746175" r="4" fill="#e0c690"></circle>
+      <circle r="40" fill="#c9a96e"></circle>
+      <circle r="20" fill="#1a1410"></circle>
+    </g>
+  
+    <text x="56" y="92" font-family="Georgia, &#39;Cormorant Garamond&#39;, serif" font-style="italic" font-size="34" fill="#c9a96e">N° 02</text>
+    <text x="56" y="952" font-family="system-ui,sans-serif" font-size="14" fill="#1a1410" opacity="0.55" letter-spacing="3">BRODERIE MAIN, FILS DORÉS</text>
+    <text x="744" y="952" text-anchor="end" font-family="system-ui,sans-serif" font-size="11" fill="#1a1410" opacity="0.45" letter-spacing="3">DIDALLAH · DAKAR</text>
+  </svg>

@@ -1,0 +1,9 @@
+models:
+  - title: DeepSeek Coder
+    provider: deepseek
+    model: deepseek-coder
+    apiKey: sk-2c3118b6496147d2a64ab53b7f206efb
+  - title: DeepSeek Chat
+    provider: deepseek
+    model: deepseek-chat
+    apiKey: sk-2c3118b6496147d2a64ab53b7f206efb
