@@ -118,7 +118,8 @@ function ReviewForm({ onSubmitted }: { onSubmitted: () => void }) {
   const [rating, setRating] = useState(5);
   const [product, setProduct] = useState('');
   const [text, setText] = useState('');
-  const [captcha, setCaptcha] = useState('');
+  const [captchaQuestion, setCaptchaQuestion] = useState('');
+  const [captchaUserAnswer, setCaptchaUserAnswer] = useState('');
   const [captchaAnswer, setCaptchaAnswer] = useState(0);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
@@ -129,7 +130,7 @@ function ReviewForm({ onSubmitted }: { onSubmitted: () => void }) {
     const a = Math.floor(Math.random() * 10) + 1;
     const b = Math.floor(Math.random() * 10) + 1;
     setCaptchaAnswer(a + b);
-    setCaptcha(`${a} + ${b} = ?`);
+    setCaptchaQuestion(`${a} + ${b} = ?`);
   }, []);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -137,7 +138,7 @@ function ReviewForm({ onSubmitted }: { onSubmitted: () => void }) {
     setError('');
 
     // Validation captcha
-    if (parseInt(captcha) !== captchaAnswer) {
+    if (parseInt(captchaUserAnswer) !== captchaAnswer) {
       setError('Réponse au captcha incorrecte.');
       return;
     }
@@ -265,12 +266,12 @@ function ReviewForm({ onSubmitted }: { onSubmitted: () => void }) {
 
       <div>
         <label className="block text-xs font-semibold uppercase tracking-[0.28em] text-slate-500 mb-1.5">
-          Anti-spam : {captcha}
+          Anti-spam : {captchaQuestion}
         </label>
         <input
           type="text"
-          value={captcha}
-          onChange={(e) => setCaptcha(e.target.value)}
+          value={captchaUserAnswer}
+          onChange={(e) => setCaptchaUserAnswer(e.target.value)}
           required
           placeholder="Réponse"
           className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm transition focus:border-brand-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 max-w-[120px]"
