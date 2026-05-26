@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 120" fill="none">
+  <defs>
+    <linearGradient id="brandGradH" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#356486"/>
+      <stop offset="100%" stop-color="#1f4f72"/>
+    </linearGradient>
+    <linearGradient id="goldGradH" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#c9a96e"/>
+      <stop offset="100%" stop-color="#a8884d"/>
+    </linearGradient>
+  </defs>
+  <circle cx="60" cy="60" r="56" fill="url(#brandGradH)" stroke="url(#goldGradH)" stroke-width="2"/>
+  <path d="M32 28h26c16 0 28 12 28 32s-12 32-28 32H32V28Zm24 12c9 0 16 8 16 20s-7 20-16 20H44V40h12Z" fill="white" opacity="0.98"/>
+  <text x="135" y="58" font-family="'Cormorant Garamond', 'Times New Roman', serif" font-size="42" font-weight="500" fill="#1a1410" letter-spacing="2">DiDallah</text>
+  <text x="135" y="90" font-family="'Manrope', ui-sans-serif, sans-serif" font-size="14" font-weight="600" fill="#a8884d" letter-spacing="6" text-transform="uppercase">SHOP</text>
+  <text x="135" y="108" font-family="'Manrope', ui-sans-serif, sans-serif" font-size="9" fill="#64748b" letter-spacing="3">POUR CEUX QUI CHOISISSENT LE MEILLEUR</text>
+</svg>
