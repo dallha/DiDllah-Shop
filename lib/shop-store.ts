@@ -59,7 +59,7 @@ const DEFAULT_CUSTOM_CATEGORIES: Record<string, string[]> = { beaute: [], mode: 
 
 // Deep-merge utilitaire pour fusionner les valeurs persistées avec les
 // nouveaux champs par défaut quand le schéma SiteContent évolue.
-function deepMerge<T>(base: T, patch: unknown): T {
+export function deepMerge<T>(base: T, patch: unknown): T {
   if (Array.isArray(base)) return base;
   if (typeof base !== 'object' || base === null) return base;
   if (typeof patch !== 'object' || patch === null) return base;

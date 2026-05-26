@@ -18,8 +18,8 @@ import {
   getSettingValue,
 } from '@/lib/supabase';
 import { createClient } from '@/lib/supabase-client';
-import { type Product, type SiteContent, type SiteImages } from '@/lib/data';
-import { type ShopSettings } from '@/lib/shop-store';
+import { type Product, type SiteContent, type SiteImages, defaultSiteContent } from '@/lib/data';
+import { type ShopSettings, deepMerge } from '@/lib/shop-store';
 
 export default function SupabaseSync() {
   const initialSyncDone = useRef(false);
@@ -47,7 +47,7 @@ export default function SupabaseSync() {
           supabaseClient.from('products').select('*'),
         ]);
 
-        if (remoteContent)  setSiteContentDeep(() => remoteContent);
+        if (remoteContent)  setSiteContentDeep(() => deepMerge(defaultSiteContent, remoteContent));
         if (remoteImages)   setSiteImages(remoteImages);
         if (remoteBrand)    setBrand(remoteBrand);
         
