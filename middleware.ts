@@ -14,6 +14,14 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // En développement local, si Supabase n'est pas configuré, on laisse passer
+  if (
+    process.env.NODE_ENV === 'development' &&
+    (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+  ) {
+    return NextResponse.next();
+  }
+
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(

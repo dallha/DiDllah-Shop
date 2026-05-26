@@ -1,28 +1,19 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-
-const ITEMS = [
-  '✨ Livraison gratuite à Dakar dès 25 000 FCFA',
-  '🌍 Expédition vers la diaspora',
-  '💳 Paiement Orange Money & Wave',
-  '🧵 Bazin & Wax 100% authentiques',
-  '🌿 Huiles naturelles pressées à froid',
-  '🎁 Cadeau offert dès 50 000 FCFA',
-  '📦 Retour sous 7 jours',
-  '🤝 Coopératives de femmes sénégalaises',
-  '✨ Livraison gratuite à Dakar dès 25 000 FCFA',
-  '🌍 Expédition vers la diaspora',
-  '💳 Paiement Orange Money & Wave',
-  '🧵 Bazin & Wax 100% authentiques',
-  '🌿 Huiles naturelles pressées à froid',
-  '🎁 Cadeau offert dès 50 000 FCFA',
-  '📦 Retour sous 7 jours',
-  '🤝 Coopératives de femmes sénégalaises',
-];
+import { useShopStore } from '@/lib/shop-store';
+import { useHydrated } from '@/lib/use-hydrated';
+import { defaultSiteContent } from '@/lib/data';
 
 export default function MarqueeBanner() {
   const trackRef = useRef<HTMLDivElement>(null);
+  const siteContent = useShopStore((state) => state.siteContent);
+  const hydrated = useHydrated();
+
+  const items = hydrated ? siteContent.marquee : defaultSiteContent.marquee;
+
+  // Dupliquer pour l'effet de défilement infini
+  const displayItems = [...items, ...items];
 
   useEffect(() => {
     const track = trackRef.current;
@@ -60,13 +51,15 @@ export default function MarqueeBanner() {
       }
     };
 
-  }, []);
+  }, [items]);
+
+  if (items.length === 0) return null;
 
   return (
     <div className="relative overflow-hidden bg-gradient-to-r from-brand-600 via-brand-700 to-brand-800 py-3 border-y border-brand-500/20">
       <div className="flex whitespace-nowrap">
         <div ref={trackRef} className="flex items-center gap-0 will-change-transform">
-          {ITEMS.map((item, i) => (
+          {displayItems.map((item, i) => (
             <span key={i} className="inline-flex items-center gap-3 mx-6 text-sm font-medium text-white/90">
               {item}
             </span>
