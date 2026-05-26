@@ -1,41 +1,19 @@
 'use client';
 
+import { useShopStore } from '@/lib/shop-store';
+import { useHydrated } from '@/lib/use-hydrated';
+import { defaultSiteContent } from '@/lib/data';
 import ScrollReveal from './ScrollReveal';
 
-const ARTISANS = [
-  {
-    name: 'Coopérative des Femmes de Casamance',
-    role: 'Beurre de Karité & Savon Noir',
-    location: 'Ziguinchor, Casamance',
-    story:
-      'Depuis 2018, nous travaillons main dans la main avec une coopérative de 45 femmes qui perpétuent le savoir-faire ancestral du karité. Chaque pot est le fruit d\'un travail collectif, du ramassage des noix au barattage traditionnel.',
-    image: null,
-    initials: 'CF',
-    tags: ['Karité', 'Équitable', 'Femmes'],
-  },
-  {
-    name: 'Atelier Bazin de Dakar',
-    role: 'Bazin Riche & Broderie Main',
-    location: 'Médina, Dakar',
-    story:
-      'Notre maître teinturier, El Hadj, transforme le bazin brut en pièces uniques. Chaque coupon passe par 7 bains de teinture avant d\'être confié aux brodeuses de la Médina. Un savoir-faire transmis de père en fils depuis 1972.',
-    image: null,
-    initials: 'BD',
-    tags: ['Bazin', 'Teinture', 'Artisanat'],
-  },
-  {
-    name: 'Distillerie des Niayes',
-    role: 'Huiles Essentielles & Parfums',
-    location: 'Niayes, Thiès',
-    story:
-      'Au cœur des Niayes, notre distillateur Mamadou extrait les huiles essentielles selon la méthode traditionnelle de distillation à la vapeur. Baobab, moringa, hibiscus — chaque plante est récoltée à la main au rythme des saisons.',
-    image: null,
-    initials: 'DN',
-    tags: ['Huiles', 'Distillation', 'Naturel'],
-  },
-];
-
 export default function ArtisansSection() {
+  const siteContent = useShopStore((state) => state.siteContent);
+  const hydrated = useHydrated();
+
+  const artisans = hydrated ? siteContent.artisans : defaultSiteContent.artisans;
+  const items = artisans.items;
+
+  if (items.length === 0) return null;
+
   return (
     <section className="bg-slate-950 py-20 md:py-28 text-white overflow-hidden">
       <div className="mx-auto max-w-7xl px-6 sm:px-10">
@@ -48,24 +26,23 @@ export default function ArtisansSection() {
             </span>
           </div>
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-white mb-4">
-            Nos Artisans
+            {artisans.title}
           </h2>
           <p className="text-slate-400 max-w-2xl mb-14 text-sm md:text-base leading-relaxed">
-            Derrière chaque produit DiDallah, il y a des mains expertes, des histoires et un héritage 
-            transmis depuis des générations. Découvrez celles et ceux qui donnent vie à notre collection.
+            {artisans.subtitle}
           </p>
         </ScrollReveal>
 
         {/* Grille */}
         <div className="grid md:grid-cols-3 gap-5">
-          {ARTISANS.map((artisan, i) => (
+          {items.map((artisan, i) => (
             <ScrollReveal key={artisan.name} delay={i * 150}>
               <div className="group relative bg-slate-900/60 border border-slate-800 rounded-2xl overflow-hidden transition-all duration-300 hover:border-brand-500/30 hover:shadow-xl hover:shadow-brand-900/10 hover:-translate-y-1">
                 {/* En-tête avec initiales */}
                 <div className="p-6 pb-4">
                   <div className="flex items-center gap-4 mb-4">
                     <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center text-white text-xl font-bold flex-shrink-0 shadow-lg">
-                      {artisan.initials}
+                      {artisan.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}
                     </div>
                     <div className="min-w-0">
                       <p className="text-base font-bold text-white truncate">{artisan.name}</p>
@@ -85,9 +62,9 @@ export default function ArtisansSection() {
                     ))}
                   </div>
 
-                  {/* Histoire */}
+                  {/* Description */}
                   <p className="text-sm text-slate-400 leading-relaxed italic">
-                    &ldquo;{artisan.story}&rdquo;
+                    &ldquo;{artisan.description}&rdquo;
                   </p>
                 </div>
 

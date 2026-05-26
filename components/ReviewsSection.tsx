@@ -1,91 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import { useShopStore } from '@/lib/shop-store';
 import { useHydrated } from '@/lib/use-hydrated';
-
-// ─── Types ──────────────────────────────────────────────────────────────────────
-
-type Review = {
-  id: string;
-  name: string;
-  initials: string;
-  location: string;
-  rating: number;
-  text: string;
-  productName: string;
-  productCategory: string;
-  beforeAfter?: { before: string; after: string };
-  date: string;
-};
-
-const MOCK_REVIEWS: Review[] = [
-  {
-    id: 'r1',
-    name: 'Aminata Diallo',
-    initials: 'AD',
-    location: 'Dakar',
-    rating: 5,
-    text: "Le lait corporel au karité est une révélation ! Ma peau n'a jamais été aussi douce. Livraison rapide et produit authentique.",
-    productName: 'Lait Corporel au Karité Pur',
-    productCategory: 'Soins corporels',
-    date: '2026-05-20',
-  },
-  {
-    id: 'r2',
-    name: 'Mamadou Ndiaye',
-    initials: 'MN',
-    location: 'Thiès',
-    rating: 5,
-    text: "J'ai commandé le Boubou brodé pour le mariage de ma sœur. La qualité du bazin est exceptionnelle, les broderies sont faites à la main. Un véritable chef-d'œuvre.",
-    productName: "Boubou Femme Brodé — Soirée d'Or",
-    productCategory: 'Tenues traditionnelles',
-    date: '2026-05-18',
-  },
-  {
-    id: 'r3',
-    name: 'Fatou Sy',
-    initials: 'FS',
-    location: 'Paris (Diaspora)',
-    rating: 4,
-    text: "L'Eau de Parfum Jardin de Liberté a un sillage magnifique. Je reçois des compliments à chaque fois. Seul bémol : j'aurais aimé un format voyage.",
-    productName: 'Eau de Parfum — Jardin de Liberté',
-    productCategory: 'Parfumerie',
-    date: '2026-05-15',
-  },
-  {
-    id: 'r4',
-    name: 'Ousmane Ba',
-    initials: 'OB',
-    location: 'Saint-Louis',
-    rating: 5,
-    text: "Le tissu wax est magnifique, couleurs vibrantes et tissu épais de qualité. Ma femme va se faire une magnifique robe. Merci DiDallah !",
-    productName: 'Tissu Wax — 6 yards',
-    productCategory: 'Tissus',
-    date: '2026-05-12',
-  },
-  {
-    id: 'r5',
-    name: 'Marième Fall',
-    initials: 'MF',
-    location: 'Dakar',
-    rating: 5,
-    text: "Le sérum 7 huiles a transformé mes cheveux. Après 3 semaines d'utilisation, ils sont plus brillants et moins cassants. Produit 100% naturel, ça change tout !",
-    productName: 'Sérum Capillaire — 7 Huiles Précieuses',
-    productCategory: 'Huiles & cheveux',
-    date: '2026-05-10',
-  },
-  {
-    id: 'r6',
-    name: 'Khady Diop',
-    initials: 'KD',
-    location: 'Touba',
-    rating: 5,
-    text: "Le beurre de karité brut est exactement ce que je cherchais. Pur, sans additifs, sent bon le naturel. Ma peau sèche dit merci !",
-    productName: 'Beurre de Karité Brut — Pot Artisanal',
-    productCategory: 'Soins corporels',
-    date: '2026-05-08',
-  },
-];
+import { defaultSiteContent } from '@/lib/data';
 
 // ─── Composant Étoiles ──────────────────────────────────────────────────────────
 
@@ -109,7 +27,7 @@ function Stars({ rating, size = 'sm' }: { rating: number; size?: 'sm' | 'md' }) 
 
 // ─── Carte Avis ─────────────────────────────────────────────────────────────────
 
-function ReviewCard({ review, featured }: { review: Review; featured?: boolean }) {
+function ReviewCard({ review, featured }: { review: { initials: string; name: string; role: string; product: string; rating: number; text: string; tags: string[]; result?: string; period?: string }; featured?: boolean }) {
   return (
     <div
       className={`group relative bg-white rounded-2xl border border-slate-100 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 ${
@@ -134,7 +52,7 @@ function ReviewCard({ review, featured }: { review: Review; featured?: boolean }
           </div>
           <div className="min-w-0">
             <p className="text-sm font-semibold text-slate-900 truncate">{review.name}</p>
-            <p className="text-[11px] text-slate-400">{review.location}</p>
+            <p className="text-[11px] text-slate-400">{review.role}</p>
           </div>
         </div>
 
@@ -146,13 +64,43 @@ function ReviewCard({ review, featured }: { review: Review; featured?: boolean }
           &ldquo;{review.text}&rdquo;
         </p>
 
-        {/* Produit + Date */}
+        {/* Résultat + Période */}
+        {(review.result || review.period) && (
+          <div className="mt-3 flex items-center gap-3 text-xs text-slate-500">
+            {review.result && (
+              <span className="inline-flex items-center gap-1">
+                <svg className="w-3.5 h-3.5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+                {review.result}
+              </span>
+            )}
+            {review.period && (
+              <span className="inline-flex items-center gap-1">
+                <svg className="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {review.period}
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* Tags */}
+        {review.tags.length > 0 && (
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            {review.tags.map((tag) => (
+              <span key={tag} className="text-[10px] font-medium text-brand-700 bg-brand-50 px-2 py-0.5 rounded-full">
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* Produit */}
         <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
           <span className="text-[11px] font-medium text-brand-700 bg-brand-50 px-2 py-0.5 rounded-full truncate max-w-[160px]">
-            {review.productName}
-          </span>
-          <span className="text-[10px] text-slate-400 flex-shrink-0">
-            {new Date(review.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}
+            {review.product}
           </span>
         </div>
       </div>
@@ -163,31 +111,17 @@ function ReviewCard({ review, featured }: { review: Review; featured?: boolean }
 // ─── Composant Principal ────────────────────────────────────────────────────────
 
 export default function ReviewsSection() {
+  const siteContent = useShopStore((state) => state.siteContent);
   const hydrated = useHydrated();
   const [showAll, setShowAll] = useState(false);
 
-  // Animation au scroll
-  if (typeof window !== 'undefined') {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.remove('opacity-0', 'translate-y-6');
-            observer.unobserve(entry.target);
-          }
-        });
-      },
-      { threshold: 0.1, rootMargin: '0px 0px -40px 0px' }
-    );
+  const reviews = hydrated ? siteContent.reviews : defaultSiteContent.reviews;
+  const items = reviews.items;
 
-    // Utiliser requestAnimationFrame pour éviter les conflits React
-    requestAnimationFrame(() => {
-      document.querySelectorAll('.review-animate').forEach((el) => observer.observe(el));
-    });
-  }
+  if (items.length === 0) return null;
 
-  const displayed = showAll ? MOCK_REVIEWS : MOCK_REVIEWS.slice(0, 3);
-  const avgRating = (MOCK_REVIEWS.reduce((s, r) => s + r.rating, 0) / MOCK_REVIEWS.length).toFixed(1);
+  const displayed = showAll ? items : items.slice(0, 3);
+  const avgRating = (items.reduce((s, r) => s + r.rating, 0) / items.length).toFixed(1);
 
   return (
     <section className="bg-gradient-to-b from-white to-slate-50 py-20 md:py-28">
@@ -202,10 +136,10 @@ export default function ReviewsSection() {
               </span>
             </div>
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-slate-950">
-              Ce qu'ils disent
+              {reviews.title}
             </h2>
             <p className="mt-3 text-slate-500 max-w-lg">
-              Des clients satisfaits, des produits qui font la différence. Découvrez leurs témoignages.
+              {reviews.subtitle}
             </p>
           </div>
 
@@ -217,7 +151,7 @@ export default function ReviewsSection() {
             </div>
             <div className="w-px h-10 bg-slate-200" />
             <div>
-              <p className="text-sm font-semibold text-slate-900">{MOCK_REVIEWS.length} avis</p>
+              <p className="text-sm font-semibold text-slate-900">{items.length} avis</p>
               <p className="text-xs text-slate-400">100% vérifiés</p>
             </div>
           </div>
@@ -227,9 +161,37 @@ export default function ReviewsSection() {
         <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {displayed.map((review, i) => (
             <div
-              key={review.id}
-              className={`review-animate opacity-0 translate-y-6 transition-all duration-700 ease-out`}
-              style={{ transitionDelay: `${i * 100}ms` }}
+              key={review.initials + review.name}
+              className="opacity-0 translate-y-6 transition-all duration-700 ease-out"
+              style={{
+                animation: `none`,
+                opacity: undefined as unknown as string,
+                transform: undefined as unknown as string,
+              }}
+              onLoad={(e) => {
+                const el = e.currentTarget;
+                requestAnimationFrame(() => {
+                  el.style.opacity = '1';
+                  el.style.transform = 'translateY(0)';
+                });
+              }}
+              ref={(el) => {
+                if (el && !el.dataset.animated) {
+                  el.dataset.animated = 'true';
+                  const observer = new IntersectionObserver(
+                    (entries) => {
+                      entries.forEach((entry) => {
+                        if (entry.isIntersecting) {
+                          entry.target.classList.remove('opacity-0', 'translate-y-6');
+                          observer.unobserve(entry.target);
+                        }
+                      });
+                    },
+                    { threshold: 0.1, rootMargin: '0px 0px -40px 0px' }
+                  );
+                  observer.observe(el);
+                }
+              }}
             >
               <ReviewCard review={review} featured={i === 0} />
             </div>
@@ -237,14 +199,14 @@ export default function ReviewsSection() {
         </div>
 
         {/* Bouton Voir plus */}
-        {MOCK_REVIEWS.length > 3 && (
+        {items.length > 3 && (
           <div className="mt-10 text-center">
             <button
               type="button"
               onClick={() => setShowAll(!showAll)}
               className="group inline-flex items-center gap-2 rounded-full border-2 border-slate-200 bg-white px-8 py-3.5 text-sm font-semibold text-slate-900 transition-all hover:border-brand-500 hover:bg-brand-50 hover:text-brand-700 hover:shadow-md"
             >
-              <span>{showAll ? 'Voir moins' : `Voir les ${MOCK_REVIEWS.length} avis`}</span>
+              <span>{showAll ? 'Voir moins' : `Voir les ${items.length} avis`}</span>
               <svg
                 className={`w-4 h-4 transition-transform ${showAll ? 'rotate-180' : ''}`}
                 fill="none"
