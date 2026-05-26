@@ -2,11 +2,13 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import AdminSidebar from '@/components/AdminSidebar';
 import { useShopStore } from '@/lib/shop-store';
 import { useHydrated } from '@/lib/use-hydrated';
 import { saveAllToSupabase } from '@/components/SupabaseSync';
+import { createClient } from '@/lib/supabase-client';
+import { isSupabaseConfigured } from '@/lib/supabase';
 import {
   defaultSiteContent,
   defaultSiteImages,
@@ -465,7 +467,7 @@ function ImageUploadField({
 
 // ─── Définition des onglets ───────────────────────────────────────────────────
 
-type TabId = 'medias' | 'accueil' | 'beaute' | 'mode' | 'catalogue' | 'contact' | 'avis' | 'artisans' | 'marquee';
+type TabId = 'medias' | 'accueil' | 'beaute' | 'mode' | 'catalogue' | 'contact' | 'avis' | 'artisans' | 'marquee' | 'pending-reviews';
 
 const TABS: { id: TabId; icon: string; label: string }[] = [
   { id: 'medias',    icon: '🖼️', label: 'Médias' },
@@ -477,6 +479,7 @@ const TABS: { id: TabId; icon: string; label: string }[] = [
   { id: 'avis',      icon: '⭐', label: 'Avis clients' },
   { id: 'artisans',  icon: '🧵', label: 'Artisans' },
   { id: 'marquee',   icon: '📢', label: 'Marquee' },
+  { id: 'pending-reviews', icon: '⏳', label: 'Avis en attente' },
 ];
 
 // ─── Panneaux de contenu ──────────────────────────────────────────────────────
@@ -1330,6 +1333,191 @@ function TabMarquee({
   );
 }
 
+// ─── Onglet Avis en attente ──────────────────────────────────────────────────
+
+type PendingReview = {
+  id: string;
+  name: string;
+  email: string | null;
+  rating: number;
+  product: string;
+  text: string;
+  status: string;
+  created_at: string;
+};
+
+function TabPendingReviews() {
+  const [reviews, setReviews] = useState<PendingReview[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+
+  const loadReviews = useCallback(async () => {
+    if (!isSupabaseConfigured) {
+      setError('Supabase non configuré.');
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    setError('');
+    try {
+      const supabase = createClient();
+      const { data, error: fetchError } = await supabase
+        .from('pending_reviews')
+        .select('*')
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false });
+      if (fetchError) throw new Error(fetchError.message);
+      setReviews(data || []);
+    } catch (err) {
+      setError('Erreur lors du chargement des avis en attente.');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadReviews();
+  }, [loadReviews]);
+
+  async function approveReview(id: string) {
+    setActionLoading(id);
+    try {
+      const supabase = createClient();
+      const { error: updateError } = await supabase
+        .from('pending_reviews')
+        .update({ status: 'approved' })
+        .eq('id', id);
+      if (updateError) throw new Error(updateError.message);
+      setReviews((prev) => prev.filter((r) => r.id !== id));
+    } catch {
+      setError('Erreur lors de l\'approbation.');
+    } finally {
+      setActionLoading(null);
+    }
+  }
+
+  async function rejectReview(id: string) {
+    setActionLoading(id);
+    try {
+      const supabase = createClient();
+      const { error: updateError } = await supabase
+        .from('pending_reviews')
+        .update({ status: 'rejected' })
+        .eq('id', id);
+      if (updateError) throw new Error(updateError.message);
+      setReviews((prev) => prev.filter((r) => r.id !== id));
+    } catch {
+      setError('Erreur lors du rejet.');
+    } finally {
+      setActionLoading(null);
+    }
+  }
+
+  if (!isSupabaseConfigured) {
+    return (
+      <div className="rounded-2xl border border-amber-200 bg-amber-50 px-5 py-3 text-sm text-amber-800">
+        ⚠ Supabase n'est pas configuré. Les visiteurs ne peuvent pas soumettre d'avis.
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-5">
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="flex items-center justify-between mb-5">
+          <div>
+            <p className="font-semibold text-slate-900">Avis en attente de validation</p>
+            <p className="mt-1 text-xs text-slate-500">
+              {reviews.length} avis en attente
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={loadReviews}
+            disabled={loading}
+            className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition disabled:opacity-60"
+          >
+            {loading ? '⟳' : '↻'} Actualiser
+          </button>
+        </div>
+
+        {loading && (
+          <div className="text-center py-10 text-sm text-slate-400">
+            Chargement des avis…
+          </div>
+        )}
+
+        {error && (
+          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 mb-4">
+            {error}
+          </div>
+        )}
+
+        {!loading && reviews.length === 0 && (
+          <div className="text-center py-10">
+            <p className="text-3xl mb-2">✅</p>
+            <p className="text-sm font-semibold text-slate-700">Aucun avis en attente</p>
+            <p className="text-xs text-slate-400 mt-1">Tous les avis ont été traités.</p>
+          </div>
+        )}
+
+        {!loading && reviews.length > 0 && (
+          <div className="space-y-3">
+            {reviews.map((review) => (
+              <div key={review.id} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-sm font-semibold text-slate-900">{review.name}</span>
+                      <span className="text-xs text-slate-400">•</span>
+                      <span className="text-xs text-slate-400">
+                        {new Date(review.created_at).toLocaleDateString('fr-FR', {
+                          day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+                        })}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-amber-400 text-sm">{'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}</span>
+                      <span className="text-[11px] font-medium text-brand-700 bg-brand-50 px-2 py-0.5 rounded-full">
+                        {review.product}
+                      </span>
+                    </div>
+                    <p className="text-sm text-slate-600 italic mb-2">
+                      &ldquo;{review.text}&rdquo;
+                    </p>
+                    {review.email && (
+                      <p className="text-xs text-slate-400">📧 {review.email}</p>
+                    )}
+                  </div>
+                  <div className="flex flex-col gap-2 flex-shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => approveReview(review.id)}
+                      disabled={actionLoading === review.id}
+                      className="inline-flex items-center gap-1 rounded-full bg-emerald-600 px-4 py-2 text-xs font-semibold text-white hover:bg-emerald-700 transition disabled:opacity-60"
+                    >
+                      {actionLoading === review.id ? '…' : '✓ Approuver'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => rejectReview(review.id)}
+                      disabled={actionLoading === review.id}
+                      className="inline-flex items-center gap-1 rounded-full border border-red-200 bg-white px-4 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 transition disabled:opacity-60"
+                    >
+                      ✗ Rejeter
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ─── Page principale ──────────────────────────────────────────────────────────
 
 export default function AdminContentPage() {
@@ -1536,6 +1724,9 @@ export default function AdminContentPage() {
                   )}
                   {activeTab === 'marquee' && (
                     <TabMarquee c={c} update={update} />
+                  )}
+                  {activeTab === 'pending-reviews' && (
+                    <TabPendingReviews />
                   )}
                 </div>
               </div>

@@ -73,7 +73,42 @@ create policy "Suppression authentifiée images"
   );
 
 
--- 3. Vérifier que toutes les tables ont le RLS activé
+-- 3. Table des avis en attente de validation
+-- ──────────────────────────────────────────────────────
+create table if not exists pending_reviews (
+  id         uuid        primary key default gen_random_uuid(),
+  name       text        not null,
+  email      text,
+  rating     integer     not null check (rating >= 1 and rating <= 5),
+  product    text        not null,
+  text       text        not null,
+  status     text        not null default 'pending' check (status in ('pending', 'approved', 'rejected')),
+  created_at timestamptz not null default now()
+);
+
+alter table pending_reviews enable row level security;
+
+-- Tout le monde peut insérer un avis (le formulaire public)
+create policy "Insertion publique pending_reviews"
+  on pending_reviews for insert
+  with check (true);
+
+-- Seuls les admins authentifiés peuvent lire/modifier/supprimer
+create policy "Lecture admin pending_reviews"
+  on pending_reviews for select
+  using (auth.role() = 'authenticated');
+
+create policy "Modification admin pending_reviews"
+  on pending_reviews for update
+  using (auth.role() = 'authenticated')
+  with check (auth.role() = 'authenticated');
+
+create policy "Suppression admin pending_reviews"
+  on pending_reviews for delete
+  using (auth.role() = 'authenticated');
+
+
+-- 4. Vérifier que toutes les tables ont le RLS activé
 -- ──────────────────────────────────────────────────────
 -- Coller cette requête séparément pour contrôler :
 --
@@ -84,7 +119,7 @@ create policy "Suppression authentifiée images"
 -- Toutes les lignes doivent avoir rowsecurity = true.
 
 
--- 4. (Optionnel) Pré-remplir les lignes de contenu
+-- 5. (Optionnel) Pré-remplir les lignes de contenu
 -- ──────────────────────────────────────────────────────
 -- Le code le fait automatiquement au premier enregistrement,
 -- mais vous pouvez le faire manuellement ici si besoin :
