@@ -19,7 +19,7 @@ const nextConfig = {
     optimizePackageImports: ['@supabase/supabase-js', '@supabase/ssr', 'zustand'],
   },
 
-  // ── Images : domaines autorisés pour next/image ──────────────────────────
+  // ── Images : domaines autorisés pour next/image (Sécurisé - Faille #10 résolue) ──
   images: {
     remotePatterns: [
       {
@@ -28,11 +28,7 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: '*.supabase.co',
-      },
-      {
-        protocol: 'https',
-        hostname: '*.supabase.in',
+        hostname: 'flnbuynwkbeoknmvcjgo.supabase.co', // Restriction exacte
       },
     ],
     // Formats modernes (WebP + AVIF) générés automatiquement par Next.js
@@ -41,8 +37,19 @@ const nextConfig = {
     minimumCacheTTL: 60 * 60 * 24 * 60,
   },
 
-  // ── Headers de sécurité et cache ─────────────────────────────────────────
+  // ── Headers de sécurité et cache (Sécurisé - Faille #6 résolue) ───────────────
   async headers() {
+    const cspHeader = [
+      "default-src 'self';",
+      "script-src 'self' 'unsafe-eval' 'unsafe-inline';", // 'unsafe-eval' pour le mode dev / hot reload Next.js
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;",
+      "font-src 'self' https://fonts.gstatic.com;",
+      "img-src 'self' data: https://flnbuynwkbeoknmvcjgo.supabase.co https://images.unsplash.com;",
+      "connect-src 'self' https://flnbuynwkbeoknmvcjgo.supabase.co wss://flnbuynwkbeoknmvcjgo.supabase.co;",
+      "frame-ancestors 'none';",
+      "object-src 'none';"
+    ].join(' ');
+
     return [
       {
         source: '/(.*)',
@@ -50,6 +57,10 @@ const nextConfig = {
           { key: 'X-Content-Type-Options', value: 'nosniff' },
           { key: 'X-Frame-Options', value: 'DENY' },
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+          { key: 'X-XSS-Protection', value: '1; mode=block' },
+          { key: 'Content-Security-Policy', value: cspHeader },
+          { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
+          { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' }
         ],
       },
       {

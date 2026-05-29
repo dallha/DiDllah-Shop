@@ -1,15 +1,16 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
+import { verifyToken } from './lib/admin-auth';
 
 /**
  * Vérifie si l'utilisateur est authentifié via le cookie ADMIN_SECRET.
  * Fonctionne sans Supabase (fallback local).
  */
-function hasAdminCookie(request: NextRequest): boolean {
+async function hasAdminCookie(request: NextRequest): Promise<boolean> {
   const token = request.cookies.get('admin_token')?.value;
   const secret = process.env.ADMIN_SECRET;
   if (!secret || !token) return false;
-  return token === secret;
+  return await verifyToken(token, secret);
 }
 
 export async function middleware(request: NextRequest) {
@@ -26,7 +27,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // 1) Vérifier le cookie ADMIN_SECRET (fallback local)
-  if (hasAdminCookie(request)) {
+  if (await hasAdminCookie(request)) {
     return NextResponse.next();
   }
 

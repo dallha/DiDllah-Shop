@@ -30,6 +30,14 @@ const config: Config = {
       },
       fontFamily: {
         display: ['Inter', 'system-ui', 'sans-serif'],
+        serif: ['Georgia', 'Cambria', '"Times New Roman"', 'Times', 'serif'],
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+      },
+      transitionTimingFunction: {
+        premium: 'cubic-bezier(0.4, 0, 0.2, 1)',
+      },
+      transitionDuration: {
+        '400': '400ms',
       },
     },
   },

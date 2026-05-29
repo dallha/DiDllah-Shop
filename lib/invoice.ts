@@ -1,5 +1,5 @@
 /**
- * invoice.ts — Générateur de factures / reçus DiDallah Shop
+ * invoice.ts — Générateur de factures / reçus DiDallah Shop (Version Sécurisée)
  *
  * Usage :
  *   openInvoicePrint(makeOrderInvoice(order, brand))
@@ -14,6 +14,20 @@ export type InvoiceBrand = {
 };
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
+
+/**
+ * Échappe les caractères HTML spéciaux pour prévenir les failles XSS.
+ */
+function escHtml(str: string | undefined | null): string {
+  if (!str) return '';
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;')
+    .replace(/\//g, '&#x2F;');
+}
 
 export function fmtPrice(n: number): string {
   return n.toLocaleString('fr-FR') + ' FCFA';
@@ -218,13 +232,13 @@ const STATUS_LABELS: Record<string, { label: string; icon: string }> = {
 };
 
 export function makeOrderInvoice(order: OrderForInvoice, brand: InvoiceBrand): string {
-  const num   = invoiceNumber(order.id);
-  const date  = fmtDate(order.created_at);
+  const num   = escHtml(invoiceNumber(order.id));
+  const date  = escHtml(fmtDate(order.created_at));
   const cfg   = STATUS_LABELS[order.status] ?? { label: order.status, icon: '📦' };
   const cls   = `status-${order.status}`;
 
   // Construit les lignes du tableau à partir du texte produits
-  const lines = (order.products || 'Commande DiDallah Shop').split('\n').filter(Boolean);
+  const lines = (order.products || '').split('\n').filter(Boolean);
 
   const rows = lines.map((line) => {
     // Essaie de détecter "Produit × quantité" ou "Produit - xxx FCFA"
@@ -235,28 +249,28 @@ export function makeOrderInvoice(order: OrderForInvoice, brand: InvoiceBrand): s
     const name  = line.replace(/×\s*\d+/i, '').replace(/[\d\s]*FCFA/i, '').replace(/-/g, '').trim();
 
     return `<tr>
-      <td>${name || line}</td>
+      <td>${escHtml(name || line)}</td>
       <td style="text-align:center">${qty}</td>
       <td>${price != null ? fmtPrice(price) : '—'}</td>
     </tr>`;
   }).join('');
 
-  const statusBadge = `<span class="status-badge ${cls}">${cfg.icon} ${cfg.label}</span>`;
+  const statusBadge = `<span class="status-badge ${cls}">${escHtml(cfg.icon)} ${escHtml(cfg.label)}</span>`;
 
   const notesHtml = order.notes?.trim()
-    ? `<div class="notes-box"><strong>Notes</strong>${order.notes}</div>`
+    ? `<div class="notes-box"><strong>Notes</strong>${escHtml(order.notes).replace(/\n/g, '<br>')}</div>`
     : '';
 
   const body = `
     <!-- Header -->
     <div class="header">
       <div>
-        <div class="shop-name">${brand.name}</div>
+        <div class="shop-name">${escHtml(brand.name)}</div>
         <div class="shop-sub">Beauté &amp; Mode · Dakar</div>
         <div class="shop-meta">
-          ${brand.address ? `📍 ${brand.address}<br>` : ''}
-          ${brand.whatsapp ? `📱 ${brand.whatsapp}<br>` : ''}
-          ${brand.email ? `✉ ${brand.email}` : ''}
+          ${brand.address ? `📍 ${escHtml(brand.address)}<br>` : ''}
+          ${brand.whatsapp ? `📱 ${escHtml(brand.whatsapp)}<br>` : ''}
+          ${brand.email ? `✉ ${escHtml(brand.email)}` : ''}
         </div>
       </div>
       <div class="doc-info">
@@ -270,13 +284,13 @@ export function makeOrderInvoice(order: OrderForInvoice, brand: InvoiceBrand): s
     <div class="parties">
       <div class="party-box">
         <div class="party-label">Vendeur</div>
-        <div class="party-name">${brand.name}</div>
+        <div class="party-name">${escHtml(brand.name)}</div>
         <div class="party-sub">Dakar, Sénégal</div>
       </div>
       <div class="party-box">
         <div class="party-label">Client</div>
-        <div class="party-name">${order.client_name}</div>
-        ${order.client_phone ? `<div class="party-sub">${order.client_phone}</div>` : ''}
+        <div class="party-name">${escHtml(order.client_name)}</div>
+        ${order.client_phone ? `<div class="party-sub">${escHtml(order.client_phone)}</div>` : ''}
       </div>
     </div>
 
@@ -310,13 +324,13 @@ export function makeOrderInvoice(order: OrderForInvoice, brand: InvoiceBrand): s
 
     <!-- Footer -->
     <div class="footer">
-      <strong>${brand.name}</strong> · Merci pour votre confiance !<br>
-      ${brand.whatsapp ? `WhatsApp : ${brand.whatsapp} · ` : ''}
-      ${brand.email ? `${brand.email}` : ''}
+      <strong>${escHtml(brand.name)}</strong> · Merci pour votre confiance !<br>
+      ${brand.whatsapp ? `WhatsApp : ${escHtml(brand.whatsapp)} · ` : ''}
+      ${brand.email ? `${escHtml(brand.email)}` : ''}
     </div>
   `;
 
-  return wrapInPage(body, `Facture ${num} — ${brand.name}`);
+  return wrapInPage(body, `Facture ${num} — ${escHtml(brand.name)}`);
 }
 
 // ── Reçu Trésorerie ───────────────────────────────────────────────────────────
@@ -334,8 +348,8 @@ type PaymentForReceipt = {
 };
 
 export function makePaymentReceipt(payment: PaymentForReceipt, brand: InvoiceBrand): string {
-  const num  = invoiceNumber(payment.id);
-  const date = fmtDate(payment.date_paiement || new Date().toISOString());
+  const num  = escHtml(invoiceNumber(payment.id));
+  const date = escHtml(fmtDate(payment.date_paiement || new Date().toISOString()));
 
   const notesText = payment.notes ?? '';
   const cleanNotes = notesText
@@ -356,14 +370,14 @@ export function makePaymentReceipt(payment: PaymentForReceipt, brand: InvoiceBra
       ? 'mode-orange-money'
       : 'mode-liquide';
 
-  const modeBadge = `<span class="mode-badge ${modeClass}">💳 ${payment.mode_paiement}</span>`;
+  const modeBadge = `<span class="mode-badge ${modeClass}">💳 ${escHtml(payment.mode_paiement)}</span>`;
 
   const creditHtml = payment.credit > 0
     ? `<div class="t-row credit"><span>⚠ Crédit restant</span><span>${fmtPrice(payment.credit)}</span></div>`
     : '';
 
   const notesHtml = cleanNotes
-    ? `<div class="notes-box"><strong>Notes</strong>${cleanNotes}</div>`
+    ? `<div class="notes-box"><strong>Notes</strong>${escHtml(cleanNotes).replace(/\n/g, '<br>')}</div>`
     : '';
 
   const totalRecu = payment.paiement_comptant + payment.acompte;
@@ -373,8 +387,8 @@ export function makePaymentReceipt(payment: PaymentForReceipt, brand: InvoiceBra
     rowsHtml += `
       <tr>
         <td>
-          <div style="font-weight:600;color:#0f172a;">${productsVal}</div>
-          ${qtyVal ? `<div style="font-size:11px;color:#64748b;margin-top:2px;">📦 Quantité : <strong>${qtyVal}</strong></div>` : ''}
+          <div style="font-weight:600;color:#0f172a;">${escHtml(productsVal)}</div>
+          ${qtyVal ? `<div style="font-size:11px;color:#64748b;margin-top:2px;">📦 Quantité : <strong>${escHtml(qtyVal)}</strong></div>` : ''}
         </td>
         <td style="text-align:right;vertical-align:middle;">${fmtPrice(payment.montant_marchandise)}</td>
       </tr>
@@ -384,7 +398,7 @@ export function makePaymentReceipt(payment: PaymentForReceipt, brand: InvoiceBra
       <tr>
         <td>
           <div style="font-weight:600;color:#0f172a;">Achat Marchandise</div>
-          ${qtyVal ? `<div style="font-size:11px;color:#64748b;margin-top:2px;">📦 Quantité : <strong>${qtyVal}</strong></div>` : ''}
+          ${qtyVal ? `<div style="font-size:11px;color:#64748b;margin-top:2px;">📦 Quantité : <strong>${escHtml(qtyVal)}</strong></div>` : ''}
         </td>
         <td style="text-align:right;vertical-align:middle;">${fmtPrice(payment.montant_marchandise)}</td>
       </tr>
@@ -412,12 +426,12 @@ export function makePaymentReceipt(payment: PaymentForReceipt, brand: InvoiceBra
     <!-- Header -->
     <div class="header">
       <div>
-        <div class="shop-name">${brand.name}</div>
+        <div class="shop-name">${escHtml(brand.name)}</div>
         <div class="shop-sub">Beauté &amp; Mode · Dakar</div>
         <div class="shop-meta">
-          ${brand.address ? `📍 ${brand.address}<br>` : ''}
-          ${brand.whatsapp ? `📱 ${brand.whatsapp}<br>` : ''}
-          ${brand.email ? `✉ ${brand.email}` : ''}
+          ${brand.address ? `📍 ${escHtml(brand.address)}<br>` : ''}
+          ${brand.whatsapp ? `📱 ${escHtml(brand.whatsapp)}<br>` : ''}
+          ${brand.email ? `✉ ${escHtml(brand.email)}` : ''}
         </div>
       </div>
       <div class="doc-info">
@@ -431,12 +445,12 @@ export function makePaymentReceipt(payment: PaymentForReceipt, brand: InvoiceBra
     <div class="parties">
       <div class="party-box">
         <div class="party-label">Émetteur</div>
-        <div class="party-name">${brand.name}</div>
+        <div class="party-name">${escHtml(brand.name)}</div>
         <div class="party-sub">Dakar, Sénégal</div>
       </div>
       <div class="party-box">
         <div class="party-label">Client / Fournisseur</div>
-        <div class="party-name">${payment.nom}</div>
+        <div class="party-name">${escHtml(payment.nom)}</div>
         <div class="party-sub">Date : ${date}</div>
       </div>
     </div>
@@ -489,12 +503,12 @@ export function makePaymentReceipt(payment: PaymentForReceipt, brand: InvoiceBra
 
     <!-- Footer -->
     <div class="footer">
-      <strong>${brand.name}</strong> · Ce reçu fait foi de paiement.<br>
-      ${brand.whatsapp ? `WhatsApp : ${brand.whatsapp}` : ''}
+      <strong>${escHtml(brand.name)}</strong> · Ce reçu fait foi de paiement.<br>
+      ${brand.whatsapp ? `WhatsApp : ${escHtml(brand.whatsapp)}` : ''}
     </div>
   `;
 
-  return wrapInPage(body, `Reçu ${num} — ${brand.name}`);
+  return wrapInPage(body, `Reçu ${num} — ${escHtml(brand.name)}`);
 }
 
 // ── Ouverture fenêtre impression ─────────────────────────────────────────────

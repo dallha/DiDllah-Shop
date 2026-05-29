@@ -19,7 +19,9 @@ export default function LoginClient() {
   // Lire le paramètre redirectTo via l'API native (évite useSearchParams côté serveur)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    setRedirectTo(params.get('redirectTo') ?? '/admin');
+    const rawRedirect = params.get('redirectTo') ?? '/admin';
+    const safeRedirect = rawRedirect.startsWith('/') && !rawRedirect.startsWith('//') ? rawRedirect : '/admin';
+    setRedirectTo(safeRedirect);
   }, []);
 
   const [email, setEmail] = useState('');

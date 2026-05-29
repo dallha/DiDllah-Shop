@@ -120,52 +120,67 @@ function ReviewForm({ onSubmitted }: { onSubmitted: () => void }) {
   const [text, setText] = useState('');
   const [captchaQuestion, setCaptchaQuestion] = useState('');
   const [captchaUserAnswer, setCaptchaUserAnswer] = useState('');
-  const [captchaAnswer, setCaptchaAnswer] = useState(0);
+  const [captchaToken, setCaptchaToken] = useState('');
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
 
-  // Générer un captcha simple au montage
+  // Charger le captcha cryptographique depuis le serveur
+  async function loadCaptcha() {
+    try {
+      const res = await fetch('/api/reviews/captcha');
+      if (res.ok) {
+        const data = await res.json();
+        setCaptchaQuestion(data.question);
+        setCaptchaToken(data.token);
+      }
+    } catch (err) {
+      console.error('Erreur chargement captcha:', err);
+    }
+  }
+
   useEffect(() => {
-    const a = Math.floor(Math.random() * 10) + 1;
-    const b = Math.floor(Math.random() * 10) + 1;
-    setCaptchaAnswer(a + b);
-    setCaptchaQuestion(`${a} + ${b} = ?`);
+    loadCaptcha();
   }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError('');
 
-    // Validation captcha
-    if (parseInt(captchaUserAnswer) !== captchaAnswer) {
-      setError('Réponse au captcha incorrecte.');
-      return;
-    }
-
-    if (!name.trim() || !text.trim() || !product.trim()) {
+    if (!name.trim() || !text.trim() || !product.trim() || !captchaUserAnswer) {
       setError('Veuillez remplir tous les champs obligatoires.');
       return;
     }
 
     setSending(true);
     try {
-      if (isSupabaseConfigured) {
-        const supabase = createClient();
-        const { error: insertError } = await supabase.from('pending_reviews').insert({
+      const res = await fetch('/api/reviews/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           name: name.trim(),
           email: email.trim() || null,
           rating,
           product: product.trim(),
           text: text.trim(),
-        });
-        if (insertError) throw new Error(insertError.message);
+          captchaAnswer: captchaUserAnswer,
+          captchaToken,
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || 'Erreur lors de la soumission de l\'avis.');
       }
+
       setSuccess(true);
       onSubmitted();
-    } catch (err) {
-      console.error('[ReviewsSection] Erreur de soumission de l\'avis:', err);
-      setError("Une erreur est survenue. Veuillez réessayer plus tard.");
+    } catch (err: any) {
+      console.error('[ReviewsSection] Erreur soumission:', err);
+      setError(err.message || "Une erreur est survenue. Veuillez réessayer plus tard.");
+      // Recharger un captcha et vider la réponse en cas d'erreur
+      loadCaptcha();
+      setCaptchaUserAnswer('');
     } finally {
       setSending(false);
     }

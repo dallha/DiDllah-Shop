@@ -7,6 +7,9 @@ import CartDrawer from '@/components/CartDrawer';
 import StoreHydrator from '@/components/StoreHydrator';
 import SupabaseSync from '@/components/SupabaseSync';
 import FooterClient from '@/components/FooterClient';
+import { ViewTransitions } from 'next-view-transitions';
+import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://didallah.sn'),
@@ -53,8 +56,9 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fr">
-      <body className="min-h-screen bg-slate-50 text-slate-900 antialiased">
+    <ViewTransitions>
+      <html lang="fr">
+        <body className="min-h-screen bg-slate-50 text-slate-900 antialiased font-sans">
         <a
           href="#main-content"
           className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[60] focus:rounded-full focus:bg-slate-950 focus:px-4 focus:py-2 focus:text-sm focus:text-white"
@@ -72,7 +76,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <FooterClient />
           <CartDrawer />
         </div>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
+    </ViewTransitions>
   );
 }
