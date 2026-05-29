@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { createClient } from '@/lib/supabase-client';
 import { useShopStore } from '@/lib/shop-store';
 
-const LOGIN_BG_FALLBACK = 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&q=80';
+const LOGIN_BG_FALLBACK = '';
 
 export default function LoginClient() {
   const router = useRouter();
@@ -72,14 +72,16 @@ export default function LoginClient() {
 
       {/* Panneau gauche — visuel */}
       <div className="relative hidden lg:flex lg:w-1/2 flex-col justify-between p-12 overflow-hidden">
-        <Image
-          src={loginBg}
-          alt="DiDallah — mode africaine"
-          fill
-          className="object-cover"
-          unoptimized
-          priority
-        />
+        {loginBg ? (
+          <Image
+            src={loginBg}
+            alt="DiDallah — mode africaine"
+            fill
+            className="object-cover"
+            unoptimized
+            priority
+          />
+        ) : null}
         <div className="absolute inset-0 bg-gradient-to-br from-slate-950/80 via-slate-900/60 to-brand-900/70" />
 
         <div className="relative z-10">

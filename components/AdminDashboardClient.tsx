@@ -89,7 +89,7 @@ const isSupabaseConfigured =
   !!process.env.NEXT_PUBLIC_SUPABASE_URL && !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 // ─── Dashboard principal ─────────────────────────────────────────────────────
-const ADMIN_HERO_FALLBACK = 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1400&q=60';
+const ADMIN_HERO_FALLBACK = '';
 
 export default function AdminDashboardClient() {
   const products    = useShopStore((state) => state.products);
@@ -143,16 +143,17 @@ export default function AdminDashboardClient() {
           <div className="space-y-6">
 
             {/* ─── Hero header ─────────────────────────────────────────── */}
-            <div className="relative overflow-hidden rounded-3xl shadow-xl">
-              <Image
-                src={adminHeroSrc}
-                alt="DiDallah — mode africaine"
-                width={1400}
-                height={400}
-                className="h-44 w-full object-cover object-center"
-                unoptimized
-                priority
-              />
+            <div className="relative overflow-hidden rounded-3xl shadow-xl h-44 bg-slate-900">
+              {adminHeroSrc ? (
+                <Image
+                  src={adminHeroSrc}
+                  alt="DiDallah — mode africaine"
+                  fill
+                  className="object-cover object-[center_30%]"
+                  priority
+                  unoptimized={adminHeroSrc.startsWith('data:')}
+                />
+              ) : null}
               <div className="absolute inset-0 bg-gradient-to-r from-slate-950/85 via-slate-900/60 to-transparent" />
               <div className="absolute inset-0 flex flex-col justify-between p-8">
                 <div className="flex items-center gap-2">
