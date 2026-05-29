@@ -6,6 +6,7 @@ import TrustBar from '@/components/TrustBar';
 import CartDrawer from '@/components/CartDrawer';
 import StoreHydrator from '@/components/StoreHydrator';
 import SupabaseSync from '@/components/SupabaseSync';
+import ThemeProvider from '@/components/ThemeProvider';
 import FooterClient from '@/components/FooterClient';
 import { ViewTransitions } from 'next-view-transitions';
 import { Analytics } from '@vercel/analytics/react';
@@ -67,6 +68,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </a>
         <StoreHydrator />
         <SupabaseSync />
+        <ThemeProvider />
         <div className="relative min-h-screen flex flex-col justify-between">
           <div className="flex-1">
             <Header />

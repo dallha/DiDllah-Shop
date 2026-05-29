@@ -459,6 +459,13 @@ export type FooterLink = {
   href: string;
 };
 
+export type SiteTheme = {
+  radius: 'square' | 'rounded' | 'pill';
+  shadows: 'none' | 'soft' | 'deep';
+  brandColor: 'nuit' | 'ocean' | 'emeraude' | 'rubis' | 'or';
+  animations: boolean;
+};
+
 export type SiteContent = {
   home: HomeContent;
   beaute: UniversePageContent;
@@ -763,6 +770,13 @@ export const defaultSiteImages: SiteImages = {
   modeHeroDataUrl: null,
   adminHeroDataUrl: null,
   adminLoginDataUrl: null,
+};
+
+export const defaultSiteTheme: SiteTheme = {
+  radius: 'rounded',
+  shadows: 'soft',
+  brandColor: 'nuit',
+  animations: true,
 };
 
 /** Ex : 38 000 FCFA */

@@ -18,7 +18,7 @@ import {
   getSettingValue,
 } from '@/lib/supabase';
 import { createClient } from '@/lib/supabase-client';
-import { type Product, type SiteContent, type SiteImages, defaultSiteContent } from '@/lib/data';
+import { type Product, type SiteContent, type SiteImages, type SiteTheme, defaultSiteContent, defaultSiteTheme } from '@/lib/data';
 import { type ShopSettings, deepMerge } from '@/lib/shop-store';
 
 export default function SupabaseSync() {
@@ -26,6 +26,7 @@ export default function SupabaseSync() {
 
   const setSiteContentDeep = useShopStore((state) => state.setSiteContentDeep);
   const setSiteImages      = useShopStore((state) => state.setSiteImages);
+  const setSiteTheme       = useShopStore((state) => state.setSiteTheme);
   const setBrand           = useShopStore((state) => state.setBrand);
   const setProducts        = useShopStore((state) => state.setProducts);
 
@@ -39,15 +40,17 @@ export default function SupabaseSync() {
       if (isSupabaseConfigured) {
         try {
           const supabaseClient = createClient();
-          const [remoteContent, remoteImages, remoteBrand, remoteProductsResult] = await Promise.all([
+          const [remoteContent, remoteImages, remoteTheme, remoteBrand, remoteProductsResult] = await Promise.all([
             getSettingValue<SiteContent>('site_content'),
             getSettingValue<SiteImages>('site_images'),
+            getSettingValue<SiteTheme>('site_theme'),
             getSettingValue<ShopSettings>('brand'),
             supabaseClient.from('products').select('*'),
           ]);
 
           if (remoteContent)  setSiteContentDeep(() => deepMerge(defaultSiteContent, remoteContent));
           if (remoteImages)   setSiteImages(remoteImages);
+          if (remoteTheme)    setSiteTheme({ ...defaultSiteTheme, ...remoteTheme });
           if (remoteBrand)    setBrand(remoteBrand);
           
           const remoteProductsData = remoteProductsResult.data;
@@ -86,6 +89,7 @@ export default function SupabaseSync() {
           const localData = await res.json();
           if (localData.siteContent) setSiteContentDeep(() => deepMerge(defaultSiteContent, localData.siteContent));
           if (localData.siteImages)  setSiteImages(localData.siteImages);
+          if (localData.siteTheme)   setSiteTheme({ ...defaultSiteTheme, ...localData.siteTheme });
           if (localData.brand)       setBrand(localData.brand);
           if (localData.products)    setProducts(localData.products);
           console.log('[SupabaseSync] Données chargées depuis le fichier local');
@@ -96,7 +100,7 @@ export default function SupabaseSync() {
     }
 
     void pullInitialData();
-  }, [setSiteContentDeep, setSiteImages, setBrand, setProducts]);
+  }, [setSiteContentDeep, setSiteImages, setSiteTheme, setBrand, setProducts]);
 
 
   return null;
@@ -106,6 +110,7 @@ export default function SupabaseSync() {
 export async function saveAllToLocal(
   siteContent: SiteContent,
   siteImages: SiteImages,
+  siteTheme: SiteTheme,
   brand: ShopSettings,
   products?: Product[],
 ): Promise<{ ok: boolean; error?: string }> {
@@ -113,7 +118,7 @@ export async function saveAllToLocal(
     const res = await fetch('/api/admin/data', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ siteContent, siteImages, brand, products }),
+      body: JSON.stringify({ siteContent, siteImages, siteTheme, brand, products }),
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({ error: 'Erreur inconnue' }));
@@ -129,6 +134,7 @@ export async function saveAllToLocal(
 export async function saveAllToSupabase(
   siteContent: SiteContent,
   siteImages: SiteImages,
+  siteTheme: SiteTheme,
   brand: ShopSettings,
   products?: Product[],
 ): Promise<{ ok: boolean; error?: string }> {
@@ -138,6 +144,7 @@ export async function saveAllToSupabase(
     const entries: { key: string; value: unknown }[] = [
       { key: 'site_content', value: siteContent },
       { key: 'site_images',  value: siteImages  },
+      { key: 'site_theme',   value: siteTheme   },
       { key: 'brand',        value: brand        },
     ];
     

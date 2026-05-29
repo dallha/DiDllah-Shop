@@ -5,10 +5,12 @@ import {
   products as defaultProducts,
   defaultSiteContent,
   defaultSiteImages,
+  defaultSiteTheme,
   type Product,
   type ProductUniverse,
   type SiteContent,
   type SiteImages,
+  type SiteTheme,
 } from './data';
 
 export type ShopSettings = {
@@ -34,6 +36,7 @@ type ShopState = {
   products: Product[];
   siteContent: SiteContent;
   siteImages: SiteImages;
+  siteTheme: SiteTheme;
   /** Catégories personnalisées par univers (complètent les catégories prédéfinies) */
   customCategories: Record<string, string[]>;
   setBrand: (patch: Partial<ShopSettings>) => void;
@@ -46,6 +49,8 @@ type ShopState = {
   resetSiteContent: () => void;
   setSiteImages: (patch: Partial<SiteImages>) => void;
   resetSiteImages: () => void;
+  setSiteTheme: (patch: Partial<SiteTheme>) => void;
+  resetSiteTheme: () => void;
   addCustomCategory: (univers: string, category: string) => void;
   removeCustomCategory: (univers: string, category: string) => void;
   reset: () => void;
@@ -94,6 +99,7 @@ export const useShopStore = create<ShopState>()(
       products: defaultProducts,
       siteContent: defaultSiteContent,
       siteImages: defaultSiteImages,
+      siteTheme: defaultSiteTheme,
       customCategories: DEFAULT_CUSTOM_CATEGORIES,
       setBrand: (patch) =>
         set((state) => ({ brand: { ...state.brand, ...patch } })),
@@ -118,6 +124,9 @@ export const useShopStore = create<ShopState>()(
       setSiteImages: (patch) =>
         set((state) => ({ siteImages: { ...state.siteImages, ...patch } })),
       resetSiteImages: () => set({ siteImages: defaultSiteImages }),
+      setSiteTheme: (patch) =>
+        set((state) => ({ siteTheme: { ...state.siteTheme, ...patch } })),
+      resetSiteTheme: () => set({ siteTheme: defaultSiteTheme }),
       addCustomCategory: (univers, category) =>
         set((state) => {
           const existing = state.customCategories[univers] ?? [];
@@ -142,6 +151,7 @@ export const useShopStore = create<ShopState>()(
           products: defaultProducts,
           siteContent: defaultSiteContent,
           siteImages: defaultSiteImages,
+          siteTheme: defaultSiteTheme,
           customCategories: DEFAULT_CUSTOM_CATEGORIES,
         }),
     }),
@@ -229,7 +239,7 @@ export const useShopStore = create<ShopState>()(
         }
         const state = persistedState as Partial<ShopState>;
         if (!state.siteContent) {
-          return { ...state, siteContent: defaultSiteContent, siteImages: defaultSiteImages };
+          return { ...state, siteContent: defaultSiteContent, siteImages: defaultSiteImages, siteTheme: defaultSiteTheme };
         }
         // Fusion profonde pour récupérer les nouveaux champs ajoutés au schéma
         return {
@@ -238,6 +248,9 @@ export const useShopStore = create<ShopState>()(
           siteImages: state.siteImages
             ? { ...defaultSiteImages, ...state.siteImages }
             : defaultSiteImages,
+          siteTheme: state.siteTheme
+            ? { ...defaultSiteTheme, ...state.siteTheme }
+            : defaultSiteTheme,
         };
       },
       version: 2,

@@ -12,8 +12,10 @@ import { isSupabaseConfigured } from '@/lib/supabase';
 import {
   defaultSiteContent,
   defaultSiteImages,
+  defaultSiteTheme,
   type SiteContent,
   type SiteImages,
+  type SiteTheme,
   type ProductUniverse,
   type Review,
   type Artisan,
@@ -467,9 +469,10 @@ function ImageUploadField({
 
 // ─── Définition des onglets ───────────────────────────────────────────────────
 
-type TabId = 'medias' | 'accueil' | 'beaute' | 'mode' | 'catalogue' | 'contact' | 'avis' | 'artisans' | 'marquee' | 'pending-reviews' | 'trustbar' | 'footerlinks';
+type TabId = 'theme' | 'medias' | 'accueil' | 'beaute' | 'mode' | 'catalogue' | 'contact' | 'avis' | 'artisans' | 'marquee' | 'pending-reviews' | 'trustbar' | 'footerlinks';
 
 const TABS: { id: TabId; icon: string; label: string }[] = [
+  { id: 'theme',     icon: '🎨', label: 'Thème Global' },
   { id: 'medias',    icon: '🖼️', label: 'Médias' },
   { id: 'accueil',   icon: '🏠', label: 'Accueil' },
   { id: 'beaute',    icon: '✨', label: 'Beauté' },
@@ -485,6 +488,96 @@ const TABS: { id: TabId; icon: string; label: string }[] = [
 ];
 
 // ─── Panneaux de contenu ──────────────────────────────────────────────────────
+
+function TabTheme({
+  theme,
+  updateTheme,
+}: {
+  theme: SiteTheme;
+  updateTheme: (patch: Partial<SiteTheme>) => void;
+}) {
+  const radii = [
+    { value: 'square', label: 'Carré (Luxe classique)', desc: 'Bords droits, très chic et minimaliste.', preview: <div className="w-8 h-8 bg-slate-200 border-2 border-slate-300" /> },
+    { value: 'rounded', label: 'Arrondi (Moderne)', desc: 'Légèrement arrondi pour adoucir le design.', preview: <div className="w-8 h-8 rounded-lg bg-slate-200 border-2 border-slate-300" /> },
+    { value: 'pill', label: 'Très arrondi (Bulle)', desc: 'Bords totalement ronds, très accueillant.', preview: <div className="w-8 h-8 rounded-full bg-slate-200 border-2 border-slate-300" /> },
+  ];
+
+  const shadows = [
+    { value: 'none', label: 'Plat (Sans ombre)', desc: 'Design 2D pur, très actuel.', preview: <div className="w-8 h-8 rounded bg-white border border-slate-200" /> },
+    { value: 'soft', label: 'Ombre douce', desc: 'Sépare subtilement les éléments du fond.', preview: <div className="w-8 h-8 rounded bg-white border border-slate-200 shadow" /> },
+    { value: 'deep', label: 'Ombre profonde', desc: 'Effet 3D flottant, très prononcé.', preview: <div className="w-8 h-8 rounded bg-white shadow-xl" /> },
+  ];
+
+  const colors = [
+    { value: 'nuit', label: 'Bleu Nuit (Défaut)', desc: 'Élégant, institutionnel et profond.', preview: <div className="w-8 h-8 rounded-full bg-[#0d2b3f] shadow-inner" /> },
+    { value: 'ocean', label: 'Bleu Océan', desc: 'Plus clair et dynamique.', preview: <div className="w-8 h-8 rounded-full bg-[#0ea5e9] shadow-inner" /> },
+    { value: 'emeraude', label: 'Vert Émeraude', desc: 'Naturel, évoque la croissance.', preview: <div className="w-8 h-8 rounded-full bg-[#10b981] shadow-inner" /> },
+    { value: 'rubis', label: 'Rouge Rubis', desc: 'Chaud, passionné et audacieux.', preview: <div className="w-8 h-8 rounded-full bg-[#e11d48] shadow-inner" /> },
+    { value: 'or', label: 'Doré / Ambre', desc: 'Luxueux et solaire.', preview: <div className="w-8 h-8 rounded-full bg-[#d97706] shadow-inner" /> },
+  ];
+
+  return (
+    <div className="space-y-5">
+      <div className="rounded-2xl border border-indigo-200 bg-indigo-50 px-5 py-3 text-sm text-indigo-800">
+        🎨 <strong>Nouveau :</strong> Les modifications de thème s'appliquent globalement à tout le site. 
+      </div>
+
+      <Card title="Forme Globale (Bords)" description="Choisissez le niveau d'arrondi des cadres, boutons et images.">
+        <div className="grid gap-3 sm:grid-cols-3">
+          {radii.map((opt) => (
+            <button key={opt.value} type="button" onClick={() => updateTheme({ radius: opt.value as SiteTheme['radius'] })} className={`flex flex-col items-center gap-3 rounded-2xl border-2 p-4 text-center transition-all ${theme.radius === opt.value ? 'border-brand-600 bg-brand-50/50 ring-1 ring-brand-600 scale-[1.01]' : 'border-slate-200 bg-white hover:bg-slate-50'}`}>
+              {opt.preview}
+              <div>
+                <p className={`text-sm font-semibold ${theme.radius === opt.value ? 'text-brand-900' : 'text-slate-900'}`}>{opt.label}</p>
+                <p className="mt-1 text-xs text-slate-500">{opt.desc}</p>
+              </div>
+            </button>
+          ))}
+        </div>
+      </Card>
+
+      <Card title="Profondeur (Ombres)" description="Définissez comment les éléments se détachent du fond.">
+        <div className="grid gap-3 sm:grid-cols-3">
+          {shadows.map((opt) => (
+            <button key={opt.value} type="button" onClick={() => updateTheme({ shadows: opt.value as SiteTheme['shadows'] })} className={`flex flex-col items-center gap-3 rounded-2xl border-2 p-4 text-center transition-all bg-slate-50 ${theme.shadows === opt.value ? 'border-brand-600 ring-1 ring-brand-600 scale-[1.01]' : 'border-slate-200 hover:border-slate-300'}`}>
+              {opt.preview}
+              <div>
+                <p className={`text-sm font-semibold ${theme.shadows === opt.value ? 'text-brand-900' : 'text-slate-900'}`}>{opt.label}</p>
+                <p className="mt-1 text-xs text-slate-500">{opt.desc}</p>
+              </div>
+            </button>
+          ))}
+        </div>
+      </Card>
+
+      <Card title="Couleur de la Marque" description="La couleur principale des boutons et accents.">
+        <div className="grid gap-3 sm:grid-cols-3">
+          {colors.map((opt) => (
+            <button key={opt.value} type="button" onClick={() => updateTheme({ brandColor: opt.value as SiteTheme['brandColor'] })} className={`flex flex-col items-center gap-3 rounded-2xl border-2 p-4 text-center transition-all ${theme.brandColor === opt.value ? 'border-brand-600 bg-brand-50/50 ring-1 ring-brand-600 scale-[1.01]' : 'border-slate-200 bg-white hover:bg-slate-50'}`}>
+              {opt.preview}
+              <div>
+                <p className={`text-sm font-semibold ${theme.brandColor === opt.value ? 'text-brand-900' : 'text-slate-900'}`}>{opt.label}</p>
+                <p className="mt-1 text-xs text-slate-500">{opt.desc}</p>
+              </div>
+            </button>
+          ))}
+        </div>
+      </Card>
+
+      <Card title="Micro-animations" description="Activer les animations au survol (boutons qui grossissent, etc).">
+        <label className="flex items-center gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={theme.animations}
+            onChange={(e) => updateTheme({ animations: e.target.checked })}
+            className="h-5 w-5 rounded text-brand-600 focus:ring-brand-500"
+          />
+          <span className="text-sm font-medium text-slate-900">Activer les animations fluides</span>
+        </label>
+      </Card>
+    </div>
+  );
+}
 
 function TabMedias({
   imgs,
@@ -1688,6 +1781,7 @@ export default function AdminContentPage() {
 
   const c = hydrated ? siteContent : defaultSiteContent;
   const imgs = hydrated ? siteImages : defaultSiteImages;
+  const t = hydrated ? useShopStore.getState().siteTheme : defaultSiteTheme;
 
   function update(mutator: (draft: SiteContent) => void) {
     setSiteContentDeep((current) => {
@@ -1705,6 +1799,12 @@ export default function AdminContentPage() {
     setSaveStatus('idle');
   }
 
+  function updateTheme(patch: Partial<SiteTheme>) {
+    useShopStore.getState().setSiteTheme(patch);
+    setDirty(true);
+    setSaveStatus('idle');
+  }
+
   async function handleSave() {
     setSaving(true);
     setSaveStatus('idle');
@@ -1712,13 +1812,14 @@ export default function AdminContentPage() {
     // Lire les valeurs les plus récentes du store Zustand pour éviter l'état obsolète (stale state)
     const freshSiteContent = useShopStore.getState().siteContent;
     const freshSiteImages = useShopStore.getState().siteImages;
+    const freshSiteTheme = useShopStore.getState().siteTheme;
     const freshBrand = useShopStore.getState().brand;
 
     // 1) Sauvegarder vers Supabase (si configuré)
-    const supabaseResult = await saveAllToSupabase(freshSiteContent, freshSiteImages, freshBrand);
+    const supabaseResult = await saveAllToSupabase(freshSiteContent, freshSiteImages, freshSiteTheme, freshBrand);
 
     // 2) Sauvegarder aussi localement (fallback fichier JSON)
-    const localResult = await saveAllToLocal(freshSiteContent, freshSiteImages, freshBrand);
+    const localResult = await saveAllToLocal(freshSiteContent, freshSiteImages, freshSiteTheme, freshBrand);
 
     setSaving(false);
     if (supabaseResult.ok && localResult.ok) {
@@ -1735,8 +1836,9 @@ export default function AdminContentPage() {
     setSaveStatus('idle');
     const freshSiteContent = useShopStore.getState().siteContent;
     const freshSiteImages = useShopStore.getState().siteImages;
+    const freshSiteTheme = useShopStore.getState().siteTheme;
     const freshBrand = useShopStore.getState().brand;
-    const result = await saveAllToLocal(freshSiteContent, freshSiteImages, freshBrand);
+    const result = await saveAllToLocal(freshSiteContent, freshSiteImages, freshSiteTheme, freshBrand);
     setSaving(false);
     if (result.ok) {
       setSaveStatus('success');
@@ -1879,6 +1981,9 @@ export default function AdminContentPage() {
 
                 {/* Contenu de l'onglet actif */}
                 <div className="flex-1 overflow-y-auto p-6 min-w-0">
+                  {activeTab === 'theme' && (
+                    <TabTheme theme={t} updateTheme={updateTheme} />
+                  )}
                   {activeTab === 'medias' && (
                     <TabMedias imgs={imgs} updateImage={updateImage} />
                   )}
