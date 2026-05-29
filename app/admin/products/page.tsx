@@ -210,7 +210,11 @@ export default function AdminProductsPage() {
   const handleSave = async () => {
     setSaving(true);
     setSaveStatus('idle');
-    const result = await saveAllToSupabase(siteContent, siteImages, brand, products);
+    const freshSiteContent = useShopStore.getState().siteContent;
+    const freshSiteImages = useShopStore.getState().siteImages;
+    const freshSiteTheme = useShopStore.getState().siteTheme;
+    const freshBrand = useShopStore.getState().brand;
+    const result = await saveAllToSupabase(freshSiteContent, freshSiteImages, freshSiteTheme, freshBrand, products);
     setSaving(false);
     if (result.ok) {
       setSaveStatus('success');

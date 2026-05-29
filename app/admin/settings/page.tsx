@@ -53,8 +53,8 @@ export default function SettingsPage() {
 
   async function handleFinalSave() {
     setSaving(true);
-    setSaveStatus('idle');
-    const result = await saveAllToSupabase(siteContent, siteImages, brand);
+    const freshSiteTheme = useShopStore.getState().siteTheme;
+    const result = await saveAllToSupabase(siteContent, siteImages, freshSiteTheme, brand);
     setSaving(false);
     if (result.ok) {
       setSaveStatus('success');
@@ -76,8 +76,8 @@ export default function SettingsPage() {
 
   async function handleSave() {
     setSaving(true);
-    setSaveStatus('idle');
-    const result = await saveAllToSupabase(siteContent, siteImages, brand);
+    const freshSiteTheme = useShopStore.getState().siteTheme;
+    const result = await saveAllToSupabase(siteContent, siteImages, freshSiteTheme, brand);
     setSaving(false);
     if (result.ok) {
       setSaveStatus('success');
