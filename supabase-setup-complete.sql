@@ -26,9 +26,11 @@ CREATE TABLE IF NOT EXISTS customers (
   total_orders INTEGER DEFAULT 0,
   total_spent  NUMERIC DEFAULT 0,
   created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
   deleted_at   TIMESTAMPTZ
 );
+
+-- Assurer l'ajout de la colonne si la table existait déjà
+ALTER TABLE customers ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
 
 -- 3. Table de Trésorerie (suivi des paiements clients et règlements)
 -- ─────────────────────────────────────────────────────────────────────────────
@@ -79,9 +81,13 @@ CREATE TABLE IF NOT EXISTS orders (
   notes        TEXT,
   created_by_admin_id UUID REFERENCES auth.users(id), -- Conciergerie (Impersonation)
   created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
   deleted_at   TIMESTAMPTZ
 );
+
+-- Assurer l'ajout des colonnes si la table existait déjà
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES auth.users(id);
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS created_by_admin_id UUID REFERENCES auth.users(id);
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
 
 -- 6. Table de l'Inventaire Produits (source de vérité relationnelle)
 -- ─────────────────────────────────────────────────────────────────────────────
@@ -99,9 +105,12 @@ CREATE TABLE IF NOT EXISTS products (
   active      BOOLEAN DEFAULT true,
   embedding   vector(1536), -- Préparation IA
   created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
   deleted_at  TIMESTAMPTZ
 );
+
+-- Assurer l'ajout des colonnes si la table existait déjà
+ALTER TABLE products ADD COLUMN IF NOT EXISTS embedding vector(1536);
+ALTER TABLE products ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
 
 -- 7. Table des Webhook Events (Idempotence des paiements)
 -- ─────────────────────────────────────────────────────────────────────────────
