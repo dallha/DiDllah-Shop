@@ -8,7 +8,7 @@ import { revalidatePath } from 'next/cache';
  * À appeler lorsque l'utilisateur arrive sur le tunnel d'achat sans compte.
  */
 export async function signInGuest() {
-  const supabase = createClient();
+  const supabase = await createClient();
   
   // Vérifie s'il est déjà connecté
   const { data: { session } } = await supabase.auth.getSession();
@@ -27,7 +27,7 @@ export async function signInGuest() {
  * Transforme le compte anonyme actuel en compte client permanent (Account Linking).
  */
 export async function upgradeGuestToClient(email: string, password?: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
   
   const { data: { user } } = await supabase.auth.getUser();
   
