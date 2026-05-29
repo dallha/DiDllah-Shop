@@ -66,8 +66,8 @@ export async function middleware(request: NextRequest) {
       }
 
       // 2.b) Sécurité Asymétrique : Vérifier que le MFA est actif (AAL2)
-      const { data: { authenticatorAssuranceLevel } } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-      if (authenticatorAssuranceLevel?.currentLevel !== 'aal2') {
+      const { data } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+      if (data?.currentLevel !== 'aal2') {
         const mfaUrl = new URL('/admin/mfa-setup', request.url);
         mfaUrl.searchParams.set('redirectTo', pathname);
         return NextResponse.redirect(mfaUrl);

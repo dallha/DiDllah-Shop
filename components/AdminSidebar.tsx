@@ -15,6 +15,7 @@ const items = [
   { label: '💰 Trésorerie',       href: '/admin/payments' },
   { label: '🤝 Fournisseurs',    href: '/admin/suppliers' },
   { label: '📊 Stock',           href: '/admin/inventory' },
+  { label: '🛡️ Équipe & Rôles', href: '/admin/team' },
 ];
 
 export default function AdminSidebar() {
