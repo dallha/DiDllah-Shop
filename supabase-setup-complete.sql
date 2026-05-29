@@ -4,6 +4,7 @@
 -- =============================================================================
 
 CREATE EXTENSION IF NOT EXISTS vector;
+CREATE EXTENSION IF NOT EXISTS pg_cron;
 
 -- 1. Table de configuration (contenu éditorial et images de marque)
 -- ─────────────────────────────────────────────────────────────────────────────
@@ -69,12 +70,14 @@ CREATE TABLE IF NOT EXISTS fournisseurs (
 -- ─────────────────────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS orders (
   id           UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id      UUID REFERENCES auth.users(id), -- Liaison avec l'utilisateur authentifié ou invité
   client_name  TEXT NOT NULL,
   client_phone TEXT,
   products     TEXT, -- Descriptif en chaîne: "Robe × 1 \n Parfum × 2"
   total        NUMERIC DEFAULT 0,
   status       TEXT NOT NULL DEFAULT 'en_attente' CHECK (status IN ('en_attente', 'en_cours', 'livre', 'annule')),
   notes        TEXT,
+  created_by_admin_id UUID REFERENCES auth.users(id), -- Conciergerie (Impersonation)
   created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
   deleted_at   TIMESTAMPTZ
@@ -123,6 +126,39 @@ CREATE TABLE IF NOT EXISTS pending_reviews (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+-- 9. Table des Rôles Administrateurs (RBAC Granulaire)
+-- ─────────────────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS admin_roles (
+  user_id      UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  role         TEXT NOT NULL CHECK (role IN ('super_admin', 'logistician', 'editor')),
+  approved_by  UUID REFERENCES auth.users(id),
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- Trigger pour injecter le rôle dans le JWT (Custom Claims)
+CREATE OR REPLACE FUNCTION public.update_user_jwt_role()
+RETURNS TRIGGER AS $$
+BEGIN
+  UPDATE auth.users
+  SET raw_app_meta_data = coalesce(raw_app_meta_data, '{}'::jsonb) || jsonb_build_object('admin_role', NEW.role)
+  WHERE id = NEW.user_id;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS on_admin_role_change ON admin_roles;
+CREATE TRIGGER on_admin_role_change
+AFTER INSERT OR UPDATE ON admin_roles
+FOR EACH ROW EXECUTE FUNCTION public.update_user_jwt_role();
+
+-- Fonction de nettoyage des invités (Fantômes) via pg_cron
+SELECT cron.schedule('purge-guests', '0 3 * * *', $$
+  DELETE FROM auth.users 
+  WHERE is_anonymous = true 
+  AND created_at < now() - interval '30 days' 
+  AND id NOT IN (SELECT user_id FROM public.orders WHERE status = 'PAID' AND user_id IS NOT NULL);
+$$);
+
 -- =============================================================================
 -- 🔒 Activation du Row Level Security (RLS) sur toutes les tables
 -- =============================================================================
@@ -135,17 +171,24 @@ ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE products ENABLE ROW LEVEL SECURITY;
 ALTER TABLE pending_reviews ENABLE ROW LEVEL SECURITY;
 ALTER TABLE webhook_events ENABLE ROW LEVEL SECURITY;
+ALTER TABLE admin_roles ENABLE ROW LEVEL SECURITY;
 
--- Helper function to check if the user is a verified administrator via JWT custom claim
--- Placed in public schema to avoid auth schema permission restrictions in Supabase Editor
-CREATE OR REPLACE FUNCTION public.is_admin()
-RETURNS boolean AS $$
-BEGIN
-  RETURN (
-    auth.uid() IS NOT NULL AND
-    COALESCE((auth.jwt() ->> 'is_admin')::boolean, false) = true
-  );
-END;
+-- Helper functions for RBAC via JWT Custom Claims
+CREATE OR REPLACE FUNCTION public.is_super_admin() RETURNS boolean AS $$
+BEGIN RETURN COALESCE((auth.jwt() -> 'app_metadata' ->> 'admin_role'), '') = 'super_admin'; END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE OR REPLACE FUNCTION public.is_logistician() RETURNS boolean AS $$
+BEGIN RETURN COALESCE((auth.jwt() -> 'app_metadata' ->> 'admin_role'), '') IN ('super_admin', 'logistician'); END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE OR REPLACE FUNCTION public.is_editor() RETURNS boolean AS $$
+BEGIN RETURN COALESCE((auth.jwt() -> 'app_metadata' ->> 'admin_role'), '') IN ('super_admin', 'editor'); END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Remplacement de is_admin() générique
+CREATE OR REPLACE FUNCTION public.is_admin() RETURNS boolean AS $$
+BEGIN RETURN (auth.jwt() -> 'app_metadata' ->> 'admin_role') IS NOT NULL; END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- 🛡️ Politiques d'accès Sécurisées (Sécurisé - Faille #8 résolue)
@@ -160,9 +203,9 @@ DROP POLICY IF EXISTS "Écriture admin site_settings" ON site_settings;
 CREATE POLICY "Lecture publique site_settings" ON site_settings FOR SELECT USING (true);
 CREATE POLICY "Écriture admin site_settings" ON site_settings FOR ALL USING (public.is_admin()) WITH CHECK (public.is_admin());
 
--- B. Table 'customers' (100% administrative)
+-- B. Table 'customers' (100% administrative / CRM)
 DROP POLICY IF EXISTS "Acces Admin Clients" ON customers;
-CREATE POLICY "Acces Admin Clients" ON customers FOR ALL USING (public.is_admin()) WITH CHECK (public.is_admin());
+CREATE POLICY "Acces Admin Clients" ON customers FOR ALL USING (public.is_logistician()) WITH CHECK (public.is_logistician());
 
 -- C. Table 'paiements' (100% administrative)
 DROP POLICY IF EXISTS "Acces Admin Tresorerie" ON paiements;
@@ -177,16 +220,19 @@ DROP POLICY IF EXISTS "Lecture Publique Produits" ON products;
 DROP POLICY IF EXISTS "Modif Admin Produits" ON products;
 
 CREATE POLICY "Lecture Publique Produits" ON products FOR SELECT USING (true);
-CREATE POLICY "Modif Admin Produits" ON products FOR ALL USING (public.is_admin()) WITH CHECK (public.is_admin());
+CREATE POLICY "Modif Admin Produits" ON products FOR ALL USING (public.is_editor()) WITH CHECK (public.is_editor());
 
--- F. Table 'orders' (Lecture admin, écriture libre pour le panier d'achat client)
+-- F. Table 'orders' (Client voit ses commandes, Admin voit tout)
 DROP POLICY IF EXISTS "Lecture Admin Commandes" ON orders;
 DROP POLICY IF EXISTS "Insertion Publique Commandes" ON orders;
 DROP POLICY IF EXISTS "Modification Admin Commandes" ON orders;
+DROP POLICY IF EXISTS "Lecture Commandes" ON orders;
+DROP POLICY IF EXISTS "Insertion Commandes" ON orders;
+DROP POLICY IF EXISTS "Modification Commandes" ON orders;
 
-CREATE POLICY "Lecture Admin Commandes" ON orders FOR SELECT USING (public.is_admin());
-CREATE POLICY "Insertion Publique Commandes" ON orders FOR INSERT WITH CHECK (true);
-CREATE POLICY "Modification Admin Commandes" ON orders FOR ALL USING (public.is_admin()) WITH CHECK (public.is_admin());
+CREATE POLICY "Lecture Commandes" ON orders FOR SELECT USING (auth.uid() = user_id OR public.is_logistician());
+CREATE POLICY "Insertion Commandes" ON orders FOR INSERT WITH CHECK (auth.uid() = user_id OR public.is_logistician());
+CREATE POLICY "Modification Commandes" ON orders FOR UPDATE USING (public.is_logistician()) WITH CHECK (public.is_logistician());
 
 -- G. Table 'pending_reviews' (Insertion libre publique, gestion totale admin)
 DROP POLICY IF EXISTS "Insertion publique pending_reviews" ON pending_reviews;
@@ -195,9 +241,9 @@ DROP POLICY IF EXISTS "Modification admin pending_reviews" ON pending_reviews;
 DROP POLICY IF EXISTS "Suppression admin pending_reviews" ON pending_reviews;
 
 CREATE POLICY "Insertion publique pending_reviews" ON pending_reviews FOR INSERT WITH CHECK (true);
-CREATE POLICY "Lecture admin pending_reviews" ON pending_reviews FOR SELECT USING (public.is_admin());
-CREATE POLICY "Modification admin pending_reviews" ON pending_reviews FOR UPDATE USING (public.is_admin()) WITH CHECK (public.is_admin());
-CREATE POLICY "Suppression admin pending_reviews" ON pending_reviews FOR DELETE USING (public.is_admin());
+CREATE POLICY "Lecture admin pending_reviews" ON pending_reviews FOR SELECT USING (public.is_editor());
+CREATE POLICY "Modification admin pending_reviews" ON pending_reviews FOR UPDATE USING (public.is_editor()) WITH CHECK (public.is_editor());
+CREATE POLICY "Suppression admin pending_reviews" ON pending_reviews FOR DELETE USING (public.is_super_admin());
 
 -- H. Table 'webhook_events' (100% administrative / interne via service_role)
 DROP POLICY IF EXISTS "Acces interne webhook_events" ON webhook_events;

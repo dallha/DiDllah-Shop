@@ -59,6 +59,20 @@ export async function middleware(request: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser();
 
     if (user) {
+      // 2.a) Vérifier que l'utilisateur a bien un rôle admin
+      const role = user.app_metadata?.admin_role;
+      if (!role) {
+        return NextResponse.redirect(new URL('/', request.url)); // Redirige les clients normaux
+      }
+
+      // 2.b) Sécurité Asymétrique : Vérifier que le MFA est actif (AAL2)
+      const { data: { authenticatorAssuranceLevel } } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+      if (authenticatorAssuranceLevel?.currentLevel !== 'aal2') {
+        const mfaUrl = new URL('/admin/mfa-setup', request.url);
+        mfaUrl.searchParams.set('redirectTo', pathname);
+        return NextResponse.redirect(mfaUrl);
+      }
+
       return response;
     }
   }
