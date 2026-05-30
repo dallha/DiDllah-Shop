@@ -107,28 +107,12 @@ export default function CartDrawer() {
           clientEmail: user?.email || "client@didallah-shop.com"
         })
       });
-
       const data = await res.json();
-      
-      if (data.success) {
-        // 3. Ouvrir PayTech via le SDK global (chargé via Script dans layout)
-        if (typeof window !== 'undefined' && (window as any).PayTech) {
-          closeCart();
-          setShowConfirm(false);
-          new (window as any).PayTech({
-            idTransaction: orderId
-          }).withOption({
-            requestTokenUrl: data.redirect_url, // On passe directement l'URL car on a déjà le token
-            presentationMode: (window as any).PayTech.OPEN_IN_POPUP,
-            didReceiveError: (err: any) => console.error("PayTech Erreur:", err),
-            didReceiveNonSuccessResponse: (res: any) => console.warn("PayTech Non-Success:", res)
-          }).send();
-        } else {
-          // Fallback redirection directe
-          window.location.href = data.redirect_url;
-        }
+      if (data.success === 1 || data.success === true || data.token) {
+        // Redirection directe vers la page de paiement sécurisée PayTech
+        window.location.href = data.redirect_url;
       } else {
-        alert("Erreur lors de l'initialisation du paiement sécurisé.");
+        alert("Erreur lors de l'initialisation du paiement sécurisé: " + (data.message || "Erreur inconnue"));
       }
     } catch (e: any) {
       console.error("Erreur online checkout:", e);
