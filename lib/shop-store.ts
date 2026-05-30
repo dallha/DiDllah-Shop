@@ -12,7 +12,7 @@ import {
   type SiteImages,
   type SiteTheme,
   type PromoCode,
-  type Review,
+  type ProductReview,
 } from './data';
 
 export type ShopSettings = {
@@ -42,7 +42,7 @@ type ShopState = {
   siteImages: SiteImages;
   siteTheme: SiteTheme;
   promoCodes: PromoCode[];
-  reviews: Review[];
+  reviews: ProductReview[];
   /** Catégories personnalisées par univers (complètent les catégories prédéfinies) */
   customCategories: Record<string, string[]>;
   setBrand: (patch: Partial<ShopSettings>) => void;
@@ -62,8 +62,8 @@ type ShopState = {
   addPromoCode: (promo: PromoCode) => void;
   updatePromoCode: (id: string, patch: Partial<PromoCode>) => void;
   deletePromoCode: (id: string) => void;
-  addReview: (review: Review) => void;
-  updateReview: (id: string, patch: Partial<Review>) => void;
+  addReview: (review: ProductReview) => void;
+  updateReview: (id: string, patch: Partial<ProductReview>) => void;
   deleteReview: (id: string) => void;
   reset: () => void;
 };

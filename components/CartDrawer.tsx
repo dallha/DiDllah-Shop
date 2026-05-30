@@ -37,7 +37,6 @@ export default function CartDrawer() {
       const { data: { user } } = await supabase.auth.getUser();
       
       if (user) {
-        await supabase.from('orders').insert({
         const promoText = appliedPromo ? `\nPromo: ${appliedPromo.code}` : '';
         await supabase.from('orders').insert({
           user_id: user.id,

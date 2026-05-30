@@ -8,7 +8,7 @@ export type PromoCode = {
   active: boolean;
 };
 
-export type Review = {
+export type ProductReview = {
   id: string;
   productId: string;
   clientName: string;
