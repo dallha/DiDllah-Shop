@@ -33,17 +33,15 @@ export default function CartDrawer() {
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
       
-      if (user) {
-        const promoText = appliedPromo ? `\nPromo: ${appliedPromo.code}` : '';
-        await supabase.from('orders').insert({
-          user_id: user.id,
-          client_name: 'Client WhatsApp',
-          client_phone: 'N/A',
-          products: items.map((item) => `${item.quantity}× ${item.product.name}`).join('\n') + promoText,
-          total: finalTotal,
-          status: 'en_attente',
-        });
-      }
+      const promoText = appliedPromo ? `\nPromo: ${appliedPromo.code}` : '';
+      await supabase.from('orders').insert({
+        user_id: user ? user.id : null,
+        client_name: 'Client WhatsApp',
+        client_phone: 'N/A',
+        products: items.map((item) => `${item.quantity}× ${item.product.name}`).join('\n') + promoText,
+        total: finalTotal,
+        status: 'en_attente',
+      });
       
       setCheckoutSuccess(true);
       setTimeout(() => {
@@ -67,8 +65,6 @@ export default function CartDrawer() {
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
       
-      if (!user) throw new Error("Non authentifié");
-
       const promoText = appliedPromo ? `\nPromo: ${appliedPromo.code}` : '';
       const productsText = items.map((item) => `${item.quantity}× ${item.product.name}`).join('\n') + promoText;
       
@@ -78,8 +74,8 @@ export default function CartDrawer() {
 
       const { error: insertError } = await supabase.from('orders').insert({
         id: orderId,
-        user_id: user.id,
-        client_name: user.email || 'Client En Ligne',
+        user_id: user ? user.id : null,
+        client_name: user?.email || 'Client En Ligne',
         client_phone: 'N/A',
         products: productsText,
         total: finalTotal,
