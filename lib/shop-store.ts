@@ -11,6 +11,8 @@ import {
   type SiteContent,
   type SiteImages,
   type SiteTheme,
+  type PromoCode,
+  type Review,
 } from './data';
 
 export type ShopSettings = {
@@ -24,6 +26,8 @@ export type ShopSettings = {
   facebook?: string;
   /** Liens de navigation personnalisables (header) */
   navLinks?: { label: string; href: string }[];
+  /** Afficher le bouton WhatsApp flottant global */
+  whatsappFloatEnabled?: boolean;
 };
 
 // Ré-exporte le type pour les composants qui l'importent depuis shop-store
@@ -37,6 +41,8 @@ type ShopState = {
   siteContent: SiteContent;
   siteImages: SiteImages;
   siteTheme: SiteTheme;
+  promoCodes: PromoCode[];
+  reviews: Review[];
   /** Catégories personnalisées par univers (complètent les catégories prédéfinies) */
   customCategories: Record<string, string[]>;
   setBrand: (patch: Partial<ShopSettings>) => void;
@@ -53,6 +59,12 @@ type ShopState = {
   resetSiteTheme: () => void;
   addCustomCategory: (univers: string, category: string) => void;
   removeCustomCategory: (univers: string, category: string) => void;
+  addPromoCode: (promo: PromoCode) => void;
+  updatePromoCode: (id: string, patch: Partial<PromoCode>) => void;
+  deletePromoCode: (id: string) => void;
+  addReview: (review: Review) => void;
+  updateReview: (id: string, patch: Partial<Review>) => void;
+  deleteReview: (id: string) => void;
   reset: () => void;
 };
 
@@ -60,6 +72,7 @@ const DEFAULT_BRAND: ShopSettings = {
   ...defaultShop,
   tiktok: '@didallah.shop',
   facebook: 'fb.com/didallah.shop',
+  whatsappFloatEnabled: true,
 };
 
 const DEFAULT_CUSTOM_CATEGORIES: Record<string, string[]> = { beaute: [], mode: [] };
@@ -100,6 +113,8 @@ export const useShopStore = create<ShopState>()(
       siteContent: defaultSiteContent,
       siteImages: defaultSiteImages,
       siteTheme: defaultSiteTheme,
+      promoCodes: [],
+      reviews: [],
       customCategories: DEFAULT_CUSTOM_CATEGORIES,
       setBrand: (patch) =>
         set((state) => ({ brand: { ...state.brand, ...patch } })),
@@ -145,6 +160,30 @@ export const useShopStore = create<ShopState>()(
             [univers]: (state.customCategories[univers] ?? []).filter((c) => c !== category),
           },
         })),
+      addPromoCode: (promo) =>
+        set((state) => ({ promoCodes: [...state.promoCodes, promo] })),
+      updatePromoCode: (id, patch) =>
+        set((state) => ({
+          promoCodes: state.promoCodes.map((p) =>
+            p.id === id ? { ...p, ...patch } : p
+          ),
+        })),
+      deletePromoCode: (id) =>
+        set((state) => ({
+          promoCodes: state.promoCodes.filter((p) => p.id !== id),
+        })),
+      addReview: (review) =>
+        set((state) => ({ reviews: [review, ...state.reviews] })),
+      updateReview: (id, patch) =>
+        set((state) => ({
+          reviews: state.reviews.map((r) =>
+            r.id === id ? { ...r, ...patch } : r
+          ),
+        })),
+      deleteReview: (id) =>
+        set((state) => ({
+          reviews: state.reviews.filter((r) => r.id !== id),
+        })),
       reset: () =>
         set({
           brand: DEFAULT_BRAND,
@@ -152,6 +191,8 @@ export const useShopStore = create<ShopState>()(
           siteContent: defaultSiteContent,
           siteImages: defaultSiteImages,
           siteTheme: defaultSiteTheme,
+          promoCodes: [],
+          reviews: [],
           customCategories: DEFAULT_CUSTOM_CATEGORIES,
         }),
     }),

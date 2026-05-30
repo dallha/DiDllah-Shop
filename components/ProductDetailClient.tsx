@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useShopStore } from '@/lib/shop-store';
 import { useHydrated } from '@/lib/use-hydrated';
 import { formatPrice, type Product } from '@/lib/data';
@@ -17,6 +17,14 @@ export default function ProductDetailClient({
 }) {
   const storeProducts = useShopStore((state) => state.products);
   const hydrated = useHydrated();
+  
+  const allReviews = useShopStore((state) => state.reviews);
+  const addReview = useShopStore((state) => state.addReview);
+  
+  const [reviewName, setReviewName] = useState('');
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewComment, setReviewComment] = useState('');
+  const [reviewSubmitted, setReviewSubmitted] = useState(false);
 
   const product: Product | null = useMemo(() => {
     // 1. Cherche en priorité dans le store (produits admin / Supabase)
@@ -63,6 +71,28 @@ export default function ProductDetailClient({
   // ── Pendant l'hydratation si pas de fallback : affiche un squelette ────────
   const p = product ?? fallbackProduct;
   if (!p) return null;
+
+  const productReviews = allReviews.filter(r => r.productId === p.id && r.status === 'approved');
+
+  const handleReviewSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!reviewName.trim() || !reviewComment.trim()) return;
+    
+    addReview({
+      id: Math.random().toString(36).substring(2, 9),
+      productId: p.id,
+      clientName: reviewName,
+      rating: reviewRating,
+      comment: reviewComment,
+      date: new Date().toISOString(),
+      status: 'pending', // Option 1: Validation requise
+    });
+    
+    setReviewSubmitted(true);
+    setReviewName('');
+    setReviewComment('');
+    setReviewRating(5);
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-950">
@@ -140,6 +170,96 @@ export default function ProductDetailClient({
             </div>
             <AddToCartButton product={p} />
           </aside>
+        </div>
+
+        {/* Section Avis Clients */}
+        <div className="mt-16 rounded-[2rem] bg-white p-10 shadow-soft">
+          <h2 className="text-2xl font-bold text-slate-950 mb-8">Avis Clients</h2>
+          
+          <div className="grid gap-12 lg:grid-cols-2">
+            {/* Liste des avis */}
+            <div>
+              {productReviews.length === 0 ? (
+                <p className="text-slate-500 italic">Aucun avis pour le moment. Soyez le premier à donner votre avis !</p>
+              ) : (
+                <div className="space-y-6">
+                  {productReviews.map(r => (
+                    <div key={r.id} className="border-b border-slate-100 pb-6 last:border-0">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-semibold text-slate-900">{r.clientName}</span>
+                        <span className="text-xs text-slate-500">{new Date(r.date).toLocaleDateString('fr-FR')}</span>
+                      </div>
+                      <div className="flex text-amber-400 mb-3">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                          <svg key={i} className={`h-4 w-4 ${i < r.rating ? 'fill-current' : 'fill-slate-200'}`} viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                          </svg>
+                        ))}
+                      </div>
+                      <p className="text-slate-600 text-sm leading-relaxed">{r.comment}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Formulaire */}
+            <div className="rounded-3xl bg-slate-50 p-8 border border-slate-100">
+              <h3 className="text-lg font-bold text-slate-900 mb-6">Laissez votre avis</h3>
+              {reviewSubmitted ? (
+                <div className="rounded-xl bg-emerald-100 p-6 text-center">
+                  <p className="text-2xl mb-2">🎉</p>
+                  <p className="font-semibold text-emerald-800">Merci pour votre avis !</p>
+                  <p className="text-sm text-emerald-600 mt-1">Il sera publié après validation par notre équipe.</p>
+                </div>
+              ) : (
+                <form onSubmit={handleReviewSubmit} className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Votre Nom</label>
+                    <input
+                      type="text"
+                      required
+                      value={reviewName}
+                      onChange={(e) => setReviewName(e.target.value)}
+                      className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
+                      placeholder="Ex: Amina D."
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Note</label>
+                    <div className="flex gap-2">
+                      {[1, 2, 3, 4, 5].map(star => (
+                        <button
+                          type="button"
+                          key={star}
+                          onClick={() => setReviewRating(star)}
+                          className={`focus:outline-none transition-transform hover:scale-110 ${star <= reviewRating ? 'text-amber-400' : 'text-slate-200'}`}
+                        >
+                          <svg className="h-8 w-8 fill-current" viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                          </svg>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Commentaire</label>
+                    <textarea
+                      required
+                      value={reviewComment}
+                      onChange={(e) => setReviewComment(e.target.value)}
+                      rows={4}
+                      className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-brand-500 focus:ring-1 focus:ring-brand-500 resize-none"
+                      placeholder="Partagez votre expérience avec ce produit..."
+                    ></textarea>
+                  </div>
+                  <button type="submit" className="w-full rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-800 transition">
+                    Envoyer l'avis
+                  </button>
+                </form>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>

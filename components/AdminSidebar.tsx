@@ -12,6 +12,8 @@ const items = [
   { label: '⚙️ Paramètres',      href: '/admin/settings' },
   { label: '🛒 Commandes',       href: '/admin/orders' },
   { label: '👥 Clients',         href: '/admin/customers' },
+  { label: '🎟️ Codes Promo',     href: '/admin/promo' },
+  { label: '⭐ Avis Clients',    href: '/admin/reviews' },
   { label: '💰 Trésorerie',       href: '/admin/payments' },
   { label: '🤝 Fournisseurs',    href: '/admin/suppliers' },
   { label: '📊 Stock',           href: '/admin/inventory' },

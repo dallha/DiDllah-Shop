@@ -16,6 +16,12 @@ export default function CartDrawer() {
   const removeItem = useCartStore((state) => state.removeItem);
   const updateQuantity = useCartStore((state) => state.updateQuantity);
   const brandWhatsapp = useShopStore((state) => state.brand.whatsapp);
+  const promoCodes = useShopStore((state) => state.promoCodes);
+  
+  const [promoInput, setPromoInput] = useState('');
+  const [appliedPromo, setAppliedPromo] = useState<import('@/lib/data').PromoCode | null>(null);
+  const [promoError, setPromoError] = useState('');
+
   const [showConfirm, setShowConfirm] = useState(false);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [checkoutSuccess, setCheckoutSuccess] = useState(false);
@@ -32,11 +38,13 @@ export default function CartDrawer() {
       
       if (user) {
         await supabase.from('orders').insert({
+        const promoText = appliedPromo ? `\nPromo: ${appliedPromo.code}` : '';
+        await supabase.from('orders').insert({
           user_id: user.id,
           client_name: 'Client WhatsApp', // Le nom final sera mis à jour par l'admin après l'échange WhatsApp
           client_phone: 'N/A',
-          products: items.map((item) => `${item.quantity}× ${item.product.name}`).join('\n'),
-          total: totalAmount,
+          products: items.map((item) => `${item.quantity}× ${item.product.name}`).join('\n') + promoText,
+          total: finalTotal,
           status: 'en_attente',
         });
       }
@@ -72,15 +80,44 @@ export default function CartDrawer() {
     };
   }, [isOpen, closeCart]);
 
+  const finalTotal = useMemo(() => {
+    if (!appliedPromo) return totalAmount;
+    if (appliedPromo.discountType === 'percentage') {
+      return totalAmount * (1 - appliedPromo.discountValue / 100);
+    }
+    return Math.max(0, totalAmount - appliedPromo.discountValue);
+  }, [totalAmount, appliedPromo]);
+
+  const handleApplyPromo = (e: React.FormEvent) => {
+    e.preventDefault();
+    setPromoError('');
+    if (!promoInput.trim()) return;
+    const found = promoCodes?.find(p => p.code.toLowerCase() === promoInput.trim().toLowerCase());
+    if (!found) {
+      setPromoError('Code invalide');
+      return;
+    }
+    if (!found.active) {
+      setPromoError('Code expiré ou inactif');
+      return;
+    }
+    setAppliedPromo(found);
+    setPromoInput('');
+  };
+
   const whatsappUrl = useMemo(() => {
     if (items.length === 0) {
       return whatsappToHref(brandWhatsapp);
     }
-    const message = `Bonjour DiDallah Shop, je souhaite commander :\n${items
+    let message = `Bonjour DiDallah Shop, je souhaite commander :\n${items
       .map((item) => `• ${item.quantity}× ${item.product.name}`)
-      .join('\n')}\nTotal : ${formatPrice(totalAmount)}.`;
+      .join('\n')}`;
+    if (appliedPromo) {
+      message += `\nCode promo appliqué : ${appliedPromo.code}`;
+    }
+    message += `\nTotal : ${formatPrice(finalTotal)}.`;
     return whatsappToHref(brandWhatsapp, message);
-  }, [items, totalAmount, brandWhatsapp]);
+  }, [items, finalTotal, appliedPromo, brandWhatsapp]);
 
   return (
     <>
@@ -170,9 +207,46 @@ export default function CartDrawer() {
           </div>
 
           <div className="mt-8 space-y-4">
-            <div className="flex items-center justify-between rounded-3xl bg-slate-100 px-5 py-4">
-              <span className="text-sm text-slate-600">Total</span>
-              <span className="text-lg font-semibold text-slate-950">{formatPrice(totalAmount)}</span>
+            {/* ── Champ Promo ── */}
+            {items.length > 0 && (
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                {appliedPromo ? (
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wider text-emerald-600">Code appliqué</p>
+                      <p className="font-mono text-sm font-bold text-slate-900">{appliedPromo.code}</p>
+                    </div>
+                    <button onClick={() => setAppliedPromo(null)} className="text-xs font-medium text-rose-500 hover:text-rose-700 underline-offset-2 hover:underline">Retirer</button>
+                  </div>
+                ) : (
+                  <form onSubmit={handleApplyPromo} className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Code promo"
+                      value={promoInput}
+                      onChange={(e) => setPromoInput(e.target.value)}
+                      className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm uppercase placeholder-slate-400 focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
+                    />
+                    <button type="submit" className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 transition">
+                      Appliquer
+                    </button>
+                  </form>
+                )}
+                {promoError && <p className="mt-2 text-xs text-rose-500">{promoError}</p>}
+              </div>
+            )}
+
+            <div className="flex flex-col gap-2 rounded-3xl bg-slate-100 px-5 py-4">
+              {appliedPromo && (
+                <div className="flex items-center justify-between text-sm text-slate-500 line-through">
+                  <span>Sous-total</span>
+                  <span>{formatPrice(totalAmount)}</span>
+                </div>
+              )}
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-semibold text-slate-700">Total</span>
+                <span className="text-xl font-bold text-slate-950">{formatPrice(finalTotal)}</span>
+              </div>
             </div>
             {items.length === 0 ? (
               <button
@@ -241,9 +315,15 @@ export default function CartDrawer() {
                     <span className="font-semibold">{formatPrice(item.product.price * item.quantity)}</span>
                   </div>
                 ))}
+                {appliedPromo && (
+                  <div className="flex justify-between text-brand-600">
+                    <span>Réduction ({appliedPromo.code})</span>
+                    <span>-{appliedPromo.discountType === 'percentage' ? `${appliedPromo.discountValue}%` : formatPrice(appliedPromo.discountValue)}</span>
+                  </div>
+                )}
                 <div className="mt-2 flex justify-between border-t border-slate-200 pt-2 font-bold text-slate-950">
-                  <span>Total</span>
-                  <span>{formatPrice(totalAmount)}</span>
+                  <span>Total final</span>
+                  <span>{formatPrice(finalTotal)}</span>
                 </div>
               </div>
             )}

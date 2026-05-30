@@ -1,5 +1,23 @@
 export type ProductUniverse = 'beaute' | 'mode';
 
+export type PromoCode = {
+  id: string;
+  code: string;
+  discountType: 'percentage' | 'fixed';
+  discountValue: number;
+  active: boolean;
+};
+
+export type Review = {
+  id: string;
+  productId: string;
+  clientName: string;
+  rating: number; // 1 to 5
+  comment: string;
+  date: string; // ISO string
+  status: 'pending' | 'approved';
+};
+
 export type Product = {
   id: string;
   name: string;

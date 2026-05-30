@@ -380,31 +380,52 @@ export default function SettingsPage() {
                 className={fieldClass}
               />
             </label>
-            <label className="block">
-              <span className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
-                Numéro WhatsApp
-              </span>
-              <input
-                type="tel"
-                value={mounted ? brand.whatsapp : ''}
-                onChange={handleChange('whatsapp')}
-                className={fieldClass}
-                placeholder="+221 76 305 05 05"
-              />
-              {mounted && brand.whatsapp ? (
-                <p className="mt-2 text-xs text-slate-500">
-                  Lien testé :{' '}
-                  <a
-                    href={whatsappToHref(brand.whatsapp, 'Test depuis Paramètres DiDallah')}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="font-medium text-brand-700 underline-offset-4 hover:underline"
-                  >
-                    {whatsappToHref(brand.whatsapp).replace('https://', '')}
-                  </a>
-                </p>
-              ) : null}
-            </label>
+            <div className="block">
+              <label className="block mb-4">
+                <span className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
+                  Numéro WhatsApp
+                </span>
+                <input
+                  type="tel"
+                  value={mounted ? brand.whatsapp : ''}
+                  onChange={handleChange('whatsapp')}
+                  className={fieldClass}
+                  placeholder="+221 76 305 05 05"
+                />
+                {mounted && brand.whatsapp ? (
+                  <p className="mt-2 text-xs text-slate-500">
+                    Lien testé :{' '}
+                    <a
+                      href={whatsappToHref(brand.whatsapp, 'Test depuis Paramètres DiDallah')}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="font-medium text-brand-700 underline-offset-4 hover:underline"
+                    >
+                      {whatsappToHref(brand.whatsapp).replace('https://', '')}
+                    </a>
+                  </p>
+                ) : null}
+              </label>
+              
+              <label className="flex items-center gap-3 cursor-pointer p-4 border border-slate-200 rounded-2xl bg-slate-50 hover:bg-slate-100 transition">
+                <div className="relative">
+                  <input
+                    type="checkbox"
+                    className="sr-only"
+                    checked={mounted ? (brand.whatsappFloatEnabled ?? true) : true}
+                    onChange={(e) => {
+                      updateRealTime('whatsappFloatEnabled', e.target.checked as any);
+                    }}
+                  />
+                  <div className={`block w-10 h-6 rounded-full transition ${brand.whatsappFloatEnabled !== false ? 'bg-emerald-500' : 'bg-slate-300'}`}></div>
+                  <div className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition transform ${brand.whatsappFloatEnabled !== false ? 'translate-x-4' : ''}`}></div>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-sm font-semibold text-slate-900">Afficher la bulle WhatsApp</span>
+                  <span className="text-xs text-slate-500">Bouton flottant visible par vos clients en bas à droite de l'écran.</span>
+                </div>
+              </label>
+            </div>
             <label className="block">
               <span className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
                 Email

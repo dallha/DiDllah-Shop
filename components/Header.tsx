@@ -111,6 +111,17 @@ export default function Header() {
               <span className="ml-2">WhatsApp</span>
             </Link>
           )}
+
+          <Link
+            href="/compte"
+            className="group relative inline-flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-700 transition-all hover:bg-slate-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2"
+            aria-label="Mon compte"
+          >
+            <svg viewBox="0 0 24 24" className="h-5 w-5 fill-current" aria-hidden="true">
+              <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+            </svg>
+          </Link>
+
           <button
             type="button"
             onClick={toggleCart}
