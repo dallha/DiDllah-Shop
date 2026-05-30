@@ -315,15 +315,15 @@ export default function CartDrawer() {
                 disabled
                 className="block w-full rounded-full bg-slate-200 px-5 py-4 text-center text-sm font-semibold text-slate-400 cursor-not-allowed"
               >
-                Commander via WhatsApp
+                Valider ma commande
               </button>
             ) : (
               <button
                 type="button"
                 onClick={() => setShowConfirm(true)}
-                className="block w-full btn-3d btn-3d-emerald px-5 py-4 text-center text-sm font-semibold text-white focus:outline-none"
+                className="block w-full btn-3d bg-brand-600 hover:bg-brand-500 px-5 py-4 text-center text-sm font-semibold text-white focus:outline-none"
               >
-                Commander via WhatsApp
+                Valider ma commande
               </button>
             )}
             <Link
