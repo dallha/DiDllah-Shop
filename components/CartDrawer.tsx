@@ -5,7 +5,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { useCartStore } from '@/lib/cart-store';
 import { useShopStore, whatsappToHref } from '@/lib/shop-store';
 import { formatPrice } from '@/lib/data';
-import { signInGuest } from '@/lib/auth-actions';
 import { createClient } from '@/lib/supabase-client';
 
 export default function CartDrawer() {
@@ -29,14 +28,19 @@ export default function CartDrawer() {
   const handleWhatsAppCheckout = async () => {
     setIsCheckingOut(true);
     try {
-      await signInGuest();
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
+
+      if (!user || user.is_anonymous) {
+        alert("Veuillez vous connecter ou créer un compte pour passer commande et suivre vos livraisons.");
+        window.location.href = '/login';
+        return;
+      }
       
       const promoText = appliedPromo ? `\nPromo: ${appliedPromo.code}` : '';
       await supabase.from('orders').insert({
-        user_id: user ? user.id : null,
-        client_name: 'Client WhatsApp',
+        user_id: user.id,
+        client_name: user.email || 'Client WhatsApp',
         client_phone: 'N/A',
         products: items.map((item) => `${item.quantity}× ${item.product.name}`).join('\n') + promoText,
         total: finalTotal,
@@ -61,21 +65,26 @@ export default function CartDrawer() {
   const handleOnlineCheckout = async () => {
     setIsCheckingOut(true);
     try {
-      await signInGuest();
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
       
+      if (!user || user.is_anonymous) {
+        alert("Veuillez vous connecter ou créer un compte pour passer commande et suivre vos livraisons.");
+        window.location.href = '/login';
+        return;
+      }
+
       const promoText = appliedPromo ? `\nPromo: ${appliedPromo.code}` : '';
       const productsText = items.map((item) => `${item.quantity}× ${item.product.name}`).join('\n') + promoText;
       
       // 1. Créer la commande en attente dans Supabase
-      // On génère le UUID manuellement car RLS peut empêcher le select() après insert pour un guest
+      // On génère le UUID manuellement car RLS peut empêcher le select() après insert
       const orderId = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); });
 
       const { error: insertError } = await supabase.from('orders').insert({
         id: orderId,
-        user_id: user ? user.id : null,
-        client_name: user?.email || 'Client En Ligne',
+        user_id: user.id,
+        client_name: user.email || 'Client En Ligne',
         client_phone: 'N/A',
         products: productsText,
         total: finalTotal,
