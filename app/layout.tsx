@@ -12,6 +12,8 @@ import WhatsAppFloat from '@/components/WhatsAppFloat';
 import { ViewTransitions } from 'next-view-transitions';
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
+import MarketingAnalytics from '@/components/MarketingAnalytics';
+import Script from 'next/script';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://didallah.sn'),
@@ -60,7 +62,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <ViewTransitions>
       <html lang="fr">
+        <head>
+          <Script src="https://paytech.sn/cdn/paytech.min.js" strategy="lazyOnload" />
+        </head>
         <body className="min-h-screen bg-slate-50 text-slate-900 antialiased font-sans">
+        <MarketingAnalytics />
         <a
           href="#main-content"
           className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[60] focus:rounded-full focus:bg-slate-950 focus:px-4 focus:py-2 focus:text-sm focus:text-white"
