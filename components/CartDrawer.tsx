@@ -72,24 +72,31 @@ export default function CartDrawer() {
       const promoText = appliedPromo ? `\nPromo: ${appliedPromo.code}` : '';
       const productsText = items.map((item) => `${item.quantity}× ${item.product.name}`).join('\n') + promoText;
       
-      // 1. Créer la commande en attente dans Supabase et récupérer son ID
-      const { data: orderData, error: insertError } = await supabase.from('orders').insert({
+      // 1. Créer la commande en attente dans Supabase
+      // On génère le UUID manuellement car RLS peut empêcher le select() après insert pour un guest
+      const orderId = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); });
+
+      const { error: insertError } = await supabase.from('orders').insert({
+        id: orderId,
         user_id: user.id,
         client_name: user.email || 'Client En Ligne',
         client_phone: 'N/A',
         products: productsText,
         total: finalTotal,
         status: 'en_attente',
-      }).select().single();
+      });
 
-      if (insertError || !orderData) throw insertError;
+      if (insertError) {
+        console.error("Supabase Insert Error:", insertError);
+        throw new Error("Impossible de créer la commande: " + insertError.message);
+      }
 
       // 2. Initialiser le paiement avec notre API locale
       const res = await fetch('/api/paytech/request-token', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          transactionId: orderData.id,
+          transactionId: orderId,
           amount: finalTotal,
           itemName: "Commande DiDallah Shop",
           clientEmail: user.email
@@ -104,7 +111,7 @@ export default function CartDrawer() {
           closeCart();
           setShowConfirm(false);
           new (window as any).PayTech({
-            idTransaction: orderData.id
+            idTransaction: orderId
           }).withOption({
             requestTokenUrl: data.redirect_url, // On passe directement l'URL car on a déjà le token
             presentationMode: (window as any).PayTech.OPEN_IN_POPUP,
@@ -118,9 +125,9 @@ export default function CartDrawer() {
       } else {
         alert("Erreur lors de l'initialisation du paiement sécurisé.");
       }
-    } catch (e) {
+    } catch (e: any) {
       console.error("Erreur online checkout:", e);
-      alert("Une erreur est survenue.");
+      alert(e.message || "Une erreur est survenue lors du paiement.");
     } finally {
       setIsCheckingOut(false);
     }
