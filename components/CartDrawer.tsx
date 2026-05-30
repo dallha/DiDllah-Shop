@@ -95,7 +95,7 @@ export default function CartDrawer() {
           transactionId: orderId,
           amount: finalTotal,
           itemName: "Commande DiDallah Shop",
-          clientEmail: user.email
+          clientEmail: user?.email || "client@didallah-shop.com"
         })
       });
 
