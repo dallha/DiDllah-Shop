@@ -146,6 +146,11 @@ export default function ProductDetailClient({
                 <div className="rounded-3xl border border-slate-200 p-6">
                   <p className="text-xs uppercase tracking-[0.28em] text-slate-500">Prix</p>
                   <p className="mt-3 text-3xl font-semibold text-slate-950">{formatPrice(p.price)}</p>
+                  {p.compareAtPrice && p.compareAtPrice > p.price && (
+                    <p className="mt-1 text-sm font-medium text-slate-400 line-through decoration-slate-400">
+                      {formatPrice(p.compareAtPrice)}
+                    </p>
+                  )}
                 </div>
                 {p.tag && (
                   <div className="rounded-3xl border border-slate-200 p-6">

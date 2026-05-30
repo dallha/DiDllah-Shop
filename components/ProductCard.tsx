@@ -50,7 +50,14 @@ export default function ProductCard({ product }: { product: Product }) {
             </div>
           </div>
           <div className="flex items-center justify-between border-t border-slate-200 px-8 py-5">
-            <span className="text-lg font-semibold text-slate-900">{formatPrice(product.price)}</span>
+            <div className="flex items-baseline gap-2">
+              <span className="text-lg font-bold text-slate-900">{formatPrice(product.price)}</span>
+              {product.compareAtPrice && product.compareAtPrice > product.price && (
+                <span className="text-sm font-medium text-slate-400 line-through decoration-slate-400">
+                  {formatPrice(product.compareAtPrice)}
+                </span>
+              )}
+            </div>
             <span className="text-sm font-semibold uppercase tracking-[0.28em] text-brand-700 group-hover:tracking-[0.35em] transition-all duration-300">Voir →</span>
           </div>
         </Link>

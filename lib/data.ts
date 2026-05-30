@@ -24,6 +24,7 @@ export type Product = {
   univers: ProductUniverse;
   category: string;
   price: number;
+  compareAtPrice?: number; // Prix d'origine (barré)
   tag?: string;
   short: string;
   long: string;

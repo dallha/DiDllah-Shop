@@ -707,15 +707,27 @@ export default function AdminProductsPage() {
                           </div>
                         )}
                       </div>
-                      <label className="block">
-                        <span className="mb-2 block text-sm font-semibold text-slate-700">Prix (F CFA)</span>
-                        <input
-                          type="number"
-                          value={selectedProduct.price}
-                          onChange={(e) => updateField({ price: Number(e.target.value) || 0 })}
-                          className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
-                        />
-                      </label>
+                      <div className="grid grid-cols-2 gap-4">
+                        <label className="block">
+                          <span className="mb-2 block text-sm font-semibold text-slate-700">Prix (F CFA)</span>
+                          <input
+                            type="number"
+                            value={selectedProduct.price}
+                            onChange={(e) => updateField({ price: Number(e.target.value) || 0 })}
+                            className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+                          />
+                        </label>
+                        <label className="block">
+                          <span className="mb-2 block text-sm font-semibold text-slate-700">Prix barré (optionnel)</span>
+                          <input
+                            type="number"
+                            value={selectedProduct.compareAtPrice || ''}
+                            onChange={(e) => updateField({ compareAtPrice: e.target.value ? Number(e.target.value) : undefined })}
+                            placeholder="Ex: 45000"
+                            className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+                          />
+                        </label>
+                      </div>
                     </div>
 
                     <div className="grid gap-4 lg:grid-cols-2">
