@@ -8,6 +8,24 @@ DiDallah Shop est une plateforme e-commerce moderne dédiée aux produits de bea
 
 ## ✨ Fonctionnalités
 
+### 🌙 Mode Sombre Natif
+- **Sélecteur Lune/Soleil** : Bascule instantanée entre mode Jour et Nuit
+- **Palettes inversées** : Chaque couleur de marque (Nuit, Océan, Émeraude, Rubis, Or) dispose d'une version sombre optimisée
+- **Persistance intelligente** : Le choix est sauvegardé dans le localStorage et respecte les préférences système
+- **Styles complets** : Plus de 200 lignes CSS dédiées (fonds, textes, bordures, ombres, inputs, scrollbar)
+
+### 🤖 Conseiller Virtuel IA
+- **Assistant intelligent** : Chatbot flottant avec réponses contextuelles sur les produits
+- **Mode dégradé** : Fonctionne sans clé API Gemini avec des réponses pré-définies pertinentes
+- **Suggestions rapides** : Questions pré-écrites pour démarrer la conversation
+- **Intégration Gemini 2.0 Flash** : Activation optionnelle via `GEMINI_API_KEY`
+
+### 🔍 Recherche Instantanée (Cmd+K)
+- **Raccourci clavier** : `Cmd+K` ou `Ctrl+K` pour ouvrir la recherche depuis n'importe quelle page
+- **Filtrage temps réel** : Recherche par nom, description, catégorie ou univers
+- **Navigation clavier** : Flèches ↑↓ pour naviguer, ↵ pour ouvrir
+- **Miniatures produits** : Aperçu visuel avec prix et catégorie
+
 ### 🛒 Expérience d'Achat
 - **Navigation par Univers** : Sections Beauté & Mode avec filtrage dynamique
 - **Panier réactif** : Drawer latéral avec calcul automatique des totaux

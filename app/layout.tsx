@@ -9,6 +9,7 @@ import SupabaseSync from '@/components/SupabaseSync';
 import ThemeProvider from '@/components/ThemeProvider';
 import FooterClient from '@/components/FooterClient';
 import WhatsAppFloat from '@/components/WhatsAppFloat';
+import ConseillerVirtuel from '@/components/ConseillerVirtuel';
 import { ViewTransitions } from 'next-view-transitions';
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
@@ -85,6 +86,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <FooterClient />
           <CartDrawer />
           <WhatsAppFloat />
+          <ConseillerVirtuel />
         </div>
         <Analytics />
         <SpeedInsights />

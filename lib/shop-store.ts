@@ -41,6 +41,8 @@ type ShopState = {
   siteContent: SiteContent;
   siteImages: SiteImages;
   siteTheme: SiteTheme;
+  /** Mode sombre (dark mode) */
+  darkMode: boolean;
   promoCodes: PromoCode[];
   reviews: ProductReview[];
   /** Catégories personnalisées par univers (complètent les catégories prédéfinies) */
@@ -57,6 +59,8 @@ type ShopState = {
   resetSiteImages: () => void;
   setSiteTheme: (patch: Partial<SiteTheme>) => void;
   resetSiteTheme: () => void;
+  setDarkMode: (value: boolean) => void;
+  toggleDarkMode: () => void;
   addCustomCategory: (univers: string, category: string) => void;
   removeCustomCategory: (univers: string, category: string) => void;
   addPromoCode: (promo: PromoCode) => void;
@@ -67,6 +71,7 @@ type ShopState = {
   deleteReview: (id: string) => void;
   reset: () => void;
 };
+
 
 const DEFAULT_BRAND: ShopSettings = {
   ...defaultShop,
@@ -113,11 +118,25 @@ export const useShopStore = create<ShopState>()(
       siteContent: defaultSiteContent,
       siteImages: defaultSiteImages,
       siteTheme: defaultSiteTheme,
+      darkMode: false,
       promoCodes: [],
       reviews: [],
       customCategories: DEFAULT_CUSTOM_CATEGORIES,
       setBrand: (patch) =>
         set((state) => ({ brand: { ...state.brand, ...patch } })),
+      setDarkMode: (value) => {
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('didallah:dark-mode', value ? 'true' : 'false');
+        }
+        set({ darkMode: value });
+      },
+      toggleDarkMode: () => {
+        const next = !useShopStore.getState().darkMode;
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('didallah:dark-mode', next ? 'true' : 'false');
+        }
+        set({ darkMode: next });
+      },
       setProducts: (products) => set({ products }),
       addProduct: (product) =>
         set((state) => ({ products: [product, ...state.products] })),

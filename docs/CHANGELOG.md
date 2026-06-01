@@ -6,6 +6,24 @@ Types : `Ajouté` · `Modifié` · `Corrigé` · `Supprimé` · `Sécurité`
 
 ---
 
+## [1.1.0] — 2026-01-06
+
+### Ajouté
+- **Mode sombre natif (Dark Mode)** : sélecteur Lune/Soleil dans le Header, palettes inversées pour chaque couleur de marque, persistance localStorage, écoute des préférences système
+- **Conseiller Virtuel IA** : assistant chatbot flottant avec suggestions, mode dégradé avec réponses pré-définies, intégration Google Gemini 2.0 Flash (optionnel)
+- **Recherche instantanée (Cmd+K)** : modal de recherche avec filtrage temps réel, navigation clavier, miniatures produits, support dark mode
+- **Route API `/api/conseiller`** : endpoint POST avec prompt système, fallback intelligent, sécurité intégrée
+
+### Modifié
+- `tailwind.config.ts` : activation du `darkMode: 'class'`
+- `ThemeProvider.tsx` : gestion complète du dark mode avec palettes inversées
+- `shop-store.ts` : ajout de `darkMode`, `setDarkMode`, `toggleDarkMode`
+- `Header.tsx` : intégration du sélecteur de thème et du bouton de recherche
+- `globals.css` : ~200 lignes de styles dark mode (fonds, textes, bordures, ombres, inputs, scrollbar)
+- `layout.tsx` : ajout du `ConseillerVirtuel` dans le layout global
+
+---
+
 ## [1.0.6] — 2026-05-18
 
 ### Ajouté

@@ -7,6 +7,8 @@ import { usePathname } from 'next/navigation';
 import { useCartStore } from '@/lib/cart-store';
 import { useShopStore, whatsappToHref } from '@/lib/shop-store';
 import { useHydrated } from '@/lib/use-hydrated';
+import GlobalSearch from './GlobalSearch';
+
 
 const DEFAULT_NAV_LINKS = [
   { href: '/catalogue', label: 'Boutique' },
@@ -20,9 +22,12 @@ export default function Header() {
   const totalItems = useCartStore((state) => state.totalItems());
   const brand = useShopStore((state) => state.brand);
   const siteImages = useShopStore((state) => state.siteImages);
+  const darkMode = useShopStore((state) => state.darkMode);
+  const toggleDarkMode = useShopStore((state) => state.toggleDarkMode);
   const hydrated = useHydrated();
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
+
 
   const logoDataUrl = hydrated ? siteImages.logoDataUrl : null;
 
@@ -112,6 +117,21 @@ export default function Header() {
             </Link>
           )}
 
+          {/* Recherche instantanée */}
+          <GlobalSearch />
+
+          {/* Sélecteur de thème Lune/Soleil */}
+          <button
+            type="button"
+            onClick={toggleDarkMode}
+            className="group relative inline-flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-700 transition-all hover:bg-slate-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2"
+            aria-label={darkMode ? 'Activer le mode jour' : 'Activer le mode nuit'}
+          >
+            <span className="text-lg transition-transform duration-500 group-hover:scale-110" aria-hidden="true">
+              {darkMode ? '☀️' : '🌙'}
+            </span>
+          </button>
+
           <Link
             href="/compte"
             className="group relative inline-flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-700 transition-all hover:bg-slate-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2"
@@ -121,6 +141,7 @@ export default function Header() {
               <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
             </svg>
           </Link>
+
 
           <button
             type="button"
