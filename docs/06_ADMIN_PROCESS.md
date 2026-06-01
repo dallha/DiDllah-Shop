@@ -190,8 +190,15 @@ Les commandes arrivent par WhatsApp. Le suivi se fait dans l'admin :
 ### 8.1 Sauvegarde manuelle des données
 
 ```bash
-# Supabase → Table Editor → Chaque table → Export CSV
-# Fréquence recommandée : hebdomadaire
+npm run supabase:export
+```
+
+- Fréquence recommandée : hebdomadaire
+- Les exports sont stockés dans `data/supabase-backups/`
+- Pour restaurer un dump local ou de staging :
+
+```bash
+npm run supabase:import -- --in data/supabase-backups/latest
 ```
 
 ### 8.2 Sauvegarde du code

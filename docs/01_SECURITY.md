@@ -95,7 +95,8 @@ CREATE POLICY "Admins seulement" ON fournisseurs
 ### 4.3 Sauvegardes
 
 - Supabase effectue des sauvegardes automatiques quotidiennes (plan Pro)
-- Exporter manuellement les données critiques chaque semaine via **Supabase → Table Editor → Export CSV**
+- Exporter manuellement les données critiques chaque semaine via `npm run supabase:export`
+- Les exports sont stockés dans `data/supabase-backups/` et restent hors Git
 
 ---
 

@@ -24,6 +24,8 @@ DiDallah Shop est une plateforme e-commerce moderne dédiée aux produits de bea
 - **CMS intégré** : Bannières, logos, textes promotionnels
 - **Compression d'images** : Optimisation automatique à l'upload
 - **Générateur de factures** : Export PDF prêt à imprimer
+- **Sauvegarde Supabase** : export/import des tables admin via `npm run supabase:export`
+- **Backup local** : voir [README_LOCAL_BACKUP.md](README_LOCAL_BACKUP.md)
 
 ---
 
