@@ -8,7 +8,6 @@ import StoreHydrator from '@/components/StoreHydrator';
 import SupabaseSync from '@/components/SupabaseSync';
 import ThemeProvider from '@/components/ThemeProvider';
 import FooterClient from '@/components/FooterClient';
-import WhatsAppFloat from '@/components/WhatsAppFloat';
 import ConseillerVirtuel from '@/components/ConseillerVirtuel';
 import { ViewTransitions } from 'next-view-transitions';
 import { Analytics } from '@vercel/analytics/react';
@@ -85,7 +84,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </div>
           <FooterClient />
           <CartDrawer />
-          <WhatsAppFloat />
           <ConseillerVirtuel />
         </div>
         <Analytics />
