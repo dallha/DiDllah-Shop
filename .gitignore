@@ -36,3 +36,7 @@ tsconfig.tsbuildinfo
 
 # Données admin locales (sauvegarde JSON)
 data/
+
+# Playwright
+playwright-report/
+test-results/

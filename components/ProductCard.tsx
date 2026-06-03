@@ -7,6 +7,7 @@ import { useCartStore } from '@/lib/cart-store';
 import { useShopStore, whatsappToHref } from '@/lib/shop-store';
 import { Product, formatPrice } from '@/lib/data';
 import Badge from '@/components/ui/Badge';
+import { triggerStarBurst } from '@/lib/starburst';
 
 export default function ProductCard({ product }: { product: Product }) {
   const addItem = useCartStore((state) => state.addItem);
@@ -81,7 +82,13 @@ export default function ProductCard({ product }: { product: Product }) {
           {/* Ajouter au panier — icône 3D */}
           <button
             type="button"
-            onClick={() => addItem(product)}
+            onClick={(e) => {
+              addItem(product);
+              const rect = e.currentTarget.getBoundingClientRect();
+              const x = e.clientX || (rect.left + rect.width / 2);
+              const y = e.clientY || (rect.top + rect.height / 2);
+              triggerStarBurst(x, y);
+            }}
             className="flex h-12 w-12 shrink-0 items-center justify-center btn-3d btn-3d-slate focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 transition-all duration-200 hover:scale-110"
             aria-label={`Ajouter ${product.name} au panier`}
           >

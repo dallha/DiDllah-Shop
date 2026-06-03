@@ -7,6 +7,7 @@ import { useShopStore } from '@/lib/shop-store';
 import { useHydrated } from '@/lib/use-hydrated';
 import { formatPrice, type Product } from '@/lib/data';
 import AddToCartButton from '@/app/catalogue/[id]/AddToCartButton';
+import { triggerStarBurst } from '@/lib/starburst';
 
 export default function ProductDetailClient({
   id,
@@ -92,6 +93,13 @@ export default function ProductDetailClient({
     setReviewName('');
     setReviewComment('');
     setReviewRating(5);
+
+    // Déclencher le jaillissement d'étoiles sur le bouton de soumission
+    const submitBtn = (e.currentTarget as HTMLFormElement).querySelector('button[type="submit"]');
+    if (submitBtn) {
+      const rect = submitBtn.getBoundingClientRect();
+      triggerStarBurst(rect.left + rect.width / 2, rect.top + rect.height / 2);
+    }
   };
 
   return (

@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useShopStore, whatsappToHref } from '@/lib/shop-store';
+import { triggerStarBurst } from '@/lib/starburst';
 
 type Message = {
   role: 'user' | 'assistant';
@@ -90,7 +91,16 @@ export default function ConseillerVirtuel() {
       {/* Bouton flottant */}
       <button
         type="button"
-        onClick={() => setOpen((prev) => !prev)}
+        onClick={(e) => {
+          const nextOpen = !open;
+          setOpen(nextOpen);
+          if (nextOpen) {
+            const rect = e.currentTarget.getBoundingClientRect();
+            const x = e.clientX || (rect.left + rect.width / 2);
+            const y = e.clientY || (rect.top + rect.height / 2);
+            triggerStarBurst(x, y);
+          }
+        }}
         className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-brand-500 to-brand-700 text-white shadow-xl transition-all hover:scale-110 hover:shadow-2xl active:scale-95"
         aria-label={open ? 'Fermer le conseiller' : 'Ouvrir le conseiller virtuel'}
       >
