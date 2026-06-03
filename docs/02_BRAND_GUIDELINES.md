@@ -194,3 +194,44 @@ Fichiers recommandés :
 ---
 
 *Toute dérogation à cette charte doit être validée par le propriétaire.*
+
+---
+
+## 9. Le Concepteur Graphique & Services
+
+Toute l'identité de marque, le logo et les éléments de communication visuelle de **DiDallah Shop** sont protégés par le droit d'auteur et ont été créés par :
+
+**El Hadji Abdoulaye Niass (Graphiste de la Hadara)**
+
+En tant que designer graphique, il combine une approche esthétique moderne avec la richesse de notre héritage culturel pour créer des identités visuelles fortes et mémorables pour les entreprises, les institutions et les particuliers.
+
+### 9.1 Services & Packages Professionnels
+
+1. **Identité Visuelle & Logo** (La fondation de votre marque) :
+   - Recherche & Concepts : 3 propositions de logo initiales.
+   - Révisions : Jusqu'à 3 cycles de modifications pour affiner le design.
+   - Fichiers finaux : Livraison du logo en différents formats (PNG, JPG, SVG, PDF).
+   - *Tarif* : À partir de 60 000 FCFA.
+
+2. **Communication Visuelle** (Pour faire passer votre message avec impact) :
+   - Affiches & Flyers : Création de designs pour vos événements ou campagnes.
+     - *Tarif événementiel* : 30 000 FCFA (flyer ou affiche simple).
+     - *Tarif business* : 50 000 FCFA (design complexe orienté marketing).
+   - Bâches & Bannières : Conception de supports publicitaires grand format.
+     - *Tarif* : À partir de 45 000 FCFA.
+
+3. **Packages "Booster"** (Offres complètes de lancement) :
+   - *Starter Pack* : Logo + Charte graphique simple (couleurs, typographies) + Carte de visite.
+   - *Event Pack* : Affiche ou flyer + Badge + Kakemono.
+
+### 9.2 Processus de commande
+- **Contact & Briefing** : Discussion autour du projet et des besoins.
+- **Devis & Acompte** : Envoi du devis détaillé. Un acompte de 50 % est requis avant de commencer.
+- **Création & Révisions** : Travail et soumission des propositions.
+- **Validation & Livraison** : Règlement du solde restant et envoi des fichiers finaux.
+
+### 9.3 Contacts & Réalisations
+- **WhatsApp / Appel** : +221 77 623 27 41 | +221 76 375 63 63
+- **Portfolio Behance** : [behance.net/mrniasse](https://www.behance.net/mrniasse)
+- **Localisation** : Dakar, Sénégal
+

@@ -86,6 +86,20 @@ site/         → Version statique du site
 
 ---
 
+## 🎨 Conception Graphique & Crédits
+
+La charte graphique, l'identité visuelle, le logo et la direction esthétique de **DiDallah Shop** ont été conçus par :
+
+**El Hadji Abdoulaye Niass — Graphiste de la Hadara**
+- **WhatsApp / Appel** : +221 77 623 27 41 | +221 76 375 63 63
+- **Portfolio Behance** : [behance.net/mrniasse](https://www.behance.net/mrniasse)
+- **Localisation** : Dakar, Sénégal
+
+Pour plus d'informations sur ses services et ses packages de design (Logo, Flyers business & événementiels, Kakemonos, Packs Booster), vous pouvez cliquer sur son nom directement dans le pied de page du site ou consulter la charte graphique [docs/02_BRAND_GUIDELINES.md](docs/02_BRAND_GUIDELINES.md).
+
+---
+
 ## 📄 Licence
 
 Projet privé — Tous droits réservés © DiDallah Shop
+
